@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import BASIC_VERT from 'vertex.glsl';
 import BASIC_FRAG from 'fragment.glsl';
 import LINEAR_BLEND_SKINNING_VERT from 'linear_blend_skinning_vert.glsl';
+import DUAL_QUART_SKINNING_VERT from 'dual_quaternion_skinning_vert.glsl';
 import RAW_PHONG_FRAG from 'raw_phong_frag.glsl';
 import RAW_LAMBERT_FRAG from 'raw_lambert_frag.glsl';
 
@@ -23,8 +24,10 @@ export default class Shader {
       uniforms: uniforms,
       vertexShader: vertex,
       fragmentShader: fragment,
-      lights: true,
-      fog: true,
+      // only need this for phong, lambert, physical
+      // fragment shaders
+      // lights: true,
+      // fog: true,
     });
   }
 
@@ -54,6 +57,7 @@ export default class Shader {
 Shader.BASIC_VERT = BASIC_VERT;
 Shader.BASIC_FRAG = BASIC_FRAG;
 Shader.LINEAR_BLEND_SKINNING_VERT = LINEAR_BLEND_SKINNING_VERT;
+Shader.DUAL_QUART_SKINNING_VERT = DUAL_QUART_SKINNING_VERT;
 Shader.RAW_PHONG_FRAG = RAW_PHONG_FRAG;
 Shader.RAW_LAMBERT_FRAG = RAW_LAMBERT_FRAG;
 

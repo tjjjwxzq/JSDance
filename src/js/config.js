@@ -9,7 +9,7 @@ export default {
     posZ: 5,
   },
   controls: {
-    autoRotate: true,
+    autoRotate: false,
     autoRotateSpeed: 2.0,
     enableDamping: true,
     dampingFactor: 0.25,

@@ -1,5 +1,3 @@
-// import * as THREE from 'three';
-
 /**
  * class to parse and create joint controls
  * from a skinned mesh

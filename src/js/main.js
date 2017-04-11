@@ -72,10 +72,11 @@ export default class Main {
     // need to bind to this object or `this` will be undefined
     requestAnimationFrame(this.animate.bind(this));
 
-    // rotate hand
+    // update joint transforms based on gui controls
     let human = this.models['Human'];
     if (human !== null) {
-      for (let bone of human.mesh.skeleton.bones) {
+      let bones = human.mesh.skeleton.bones;
+      for (let bone of bones) {
         bone.position.x = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].x;
         bone.position.y = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].y;
         bone.position.z = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].z;
@@ -84,10 +85,22 @@ export default class Main {
         bone.rotation.y = this.viewerGui.allModelControls['Human Controls'][`${bone.name} rotation`].y * (2 * Math.PI) / 360;
         bone.rotation.z = this.viewerGui.allModelControls['Human Controls'][`${bone.name} rotation`].z * (2 * Math.PI) / 360;
       }
+      human.mesh.skeleton.update();
+
+      // update uniforms
+      let rotQuaternions = human.mesh.material.uniforms.rotQuaternions.value;
+      let transQuaternions = human.mesh.material.uniforms.transQuaternions.value;
+      for (let i=0; i < bones.length; i++) {
+        rotQuaternions[i] = bones[i].getWorldQuaternion().normalize();
+        let position = bones[i].getWorldPosition().multiplyScalar(0.5);
+        position = (new THREE.Quaternion(position.x, position.y, position.z, 0)).multiply(rotQuaternions[i]);
+        transQuaternions[i] = position;
+      }
+
+      // update skeleton helper
+      human.skeleton.update();
     }
 
-    // update skeleton helper
-    human.skeleton.update();
 
     this.controls.threeControls.update();
     this.render();
@@ -139,15 +152,31 @@ export default class Main {
   loadJSONModel(filename, modelName) {
     let loader = new THREE.JSONLoader();
     loader.load(filename, (geometry, materials) => {
-      // let material = new THREE.MultiMaterial(materials);
-      let material = Shader.createRawShaderMaterial(Shader.LINEAR_BLEND_SKINNING_VERT, Shader.RAW_LAMBERT_FRAG, THREE.ShaderLib.lambert.uniforms);
-      // let material = Shader.createShaderMaterial(Shader.LAMBERT_VERT, Shader.LAMBERT_FRAG, THREE.ShaderLib.lambert.uniforms);
+      let rotQuaternions = [];
+      let transQuaternions = [];
+      for (let i=0; i < geometry.bones.length; i++) {
+        let bone = geometry.bones[i];
+        let rotQuat = new THREE.Quaternion(bone.rotq[0], bone.rotq[1], bone.rotq[2]);
+        rotQuaternions.push(rotQuat);
+        let transQuat = new THREE.Quaternion(0.5 * bone.pos[0], 0.5 * bone.pos[1], 0.5 * bone.pos[2], 0);
+        transQuat.multiply(rotQuat);
+        transQuaternions.push(transQuat);
+      }
+      let uniforms = {
+        rotQuaternions: {type: 'v4v', value: rotQuaternions},
+        transQuaternions: {type: 'v4v', value: transQuaternions},
+      };
+
+      // let material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG);
+      let material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
+      // let material = Shader.createRawShaderMaterial(Shader.LINEAR_BLEND_SKINNING_VERT, Shader.BASIC_FRAG);
       let mesh = new THREE.SkinnedMesh(geometry, material);
 
       // setting both the flags below seem to be necessary for getting
       // the custom skinning shader to work
       mesh.material.skinning = true;
       mesh.skeleton.useVertexTexture = false;
+      console.log(mesh.skeleton);
 
       // Not sure how to make helper also rotate with mesh bones?
       let skeletonHelper = new THREE.SkeletonHelper(mesh);
@@ -182,6 +211,7 @@ export default class Main {
     }
 
     if (this.models[modelName].mesh !== undefined) {
+      console.log(this.models[modelName].mesh.skeleton.bones);
       this.viewerGui.addAllModelControls(
       SkinnedMeshControls.parseMesh(this.models[modelName].mesh), SkinnedMeshControls.parseMesh(this.models[modelName].mesh));
     }

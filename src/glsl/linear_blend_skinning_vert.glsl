@@ -52,7 +52,7 @@ varying vec3 vLightFront; // for Lambert frag
   // of the vertex currently being rendered
   uniform mat4 bindMatrix;
   uniform mat4 bindMatrixInverse;
-  uniform mat4 boneMatrices[MAX_BONES];
+  uniform mat4 boneMatrices[21];
   mat4 getBoneMatrix(const in float i) {
     return boneMatrices[int(i)];
   }
