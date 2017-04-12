@@ -53,37 +53,6 @@ varying vec4 debug;
   // of the vertex currently being rendered
   uniform mat4 bindMatrix;
   uniform mat4 bindMatrixInverse;
-  /* uniform mat4 boneMatrices[21]; */
-  /* vec4 getRotQuaternion(const in float i) { */
-    /* float r11 = boneMatrices[int(i)][0][0]; */
-    /* float r12 = boneMatrices[int(i)][0][1]; */
-    /* float r13 = boneMatrices[int(i)][0][2]; */
-
-    /* float r21 = boneMatrices[int(i)][1][0]; */
-    /* float r22 = boneMatrices[int(i)][1][1]; */
-    /* float r23 = boneMatrices[int(i)][1][2]; */
-
-    /* float r31 = boneMatrices[int(i)][2][0]; */
-    /* float r32 = boneMatrices[int(i)][2][1]; */
-    /* float r33 = boneMatrices[int(i)][2][2]; */
-
-    /* float w = - 0.5 * sqrt(1.0 + r11 + r22 + r33); */
-    /* float x = (r32 - r23) / (4.0 * w); */
-    /* float y = (r13 - r31) / (4.0 * w); */
-    /* float z = (r21 - r12) / (4.0 * w); */
-
-    /* return vec4(x, y, z, w); */
-  /* } */
-  /* vec4 getTransQuaternion(const in float i) { */
-    /* float t1 = boneMatrices[int(i)][3][0] * 0.5; */
-    /* float t2 = boneMatrices[int(i)][3][1] * 0.5; */
-    /* float t3 = boneMatrices[int(i)][3][2] * 0.5; */
-
-    /* vec3 v1 = vec3(t1, t2, t3); */
-    /* vec4 rot = getRotQuaternion(i); */
-    /* return vec4(rot.w * v1 + cross(v1, rot.xyz), - dot(v1, rot.xyz)); */
-  /* } */
-
   uniform vec4 rotQuaternions[21];
   uniform vec4 transQuaternions[21];
   vec4 getRotQuaternion(const in float i) {
@@ -168,7 +137,7 @@ void main() {
     vec3 transformedNormal = normalMatrix * skinnedNormal.xyz;
     vNormal = normalize(transformedNormal);
 
-    // get trasformed position
+    // get transformed position
     vec4 skinVertex = vec4(position, 1.0);
     vec4 transformedSkinVertex = skinMatrix * skinVertex;
     debug = transformedSkinVertex;

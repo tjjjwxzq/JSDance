@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import * as _mtl from 'utils/mtlLoader';
 import * as _obj from 'utils/objLoader';
 import * as _orb from 'utils/orbitControls';
-import SkinnedMeshControls from 'utils/skinnedMeshControls'
+import SkinnedMeshControls from 'utils/skinnedMeshControls';
 
 import Camera from 'components/camera';
 import Controls from 'components/controls';
@@ -12,6 +12,7 @@ import Renderer from 'components/renderer';
 import Light from 'components/light';
 import ViewerGui from 'components/viewerGui';
 import Shader from 'components/shader';
+import Config from 'config';
 
 import humanJSON from'human.json';
 
@@ -45,11 +46,14 @@ export default class Main {
     // Controls
     this.controls = new Controls(this.camera.threeCamera, this.renderer.threeRenderer.domElement);
 
+    // Set ups model config
+    this.modelName = Config.model.modelName;
+    this.skinningType = Config.model.skinningType;
+
     // Load models
-    this.models = {
-      'Human': null,
-    };
-    this.loadJSONModel(humanJSON, 'Human');
+    this.models = {};
+    this.models[this.modelName] = null;
+    this.loadJSONModel(humanJSON, 'Human', this.skinningType);
 
     // GUI
     this.viewerGui = new ViewerGui(Object.keys(this.models));
@@ -71,37 +75,7 @@ export default class Main {
     // the callback invoked should repeatedly invoke itself
     // need to bind to this object or `this` will be undefined
     requestAnimationFrame(this.animate.bind(this));
-
-    // update joint transforms based on gui controls
-    let human = this.models['Human'];
-    if (human !== null) {
-      let bones = human.mesh.skeleton.bones;
-      for (let bone of bones) {
-        bone.position.x = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].x;
-        bone.position.y = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].y;
-        bone.position.z = this.viewerGui.allModelControls['Human Controls'][`${bone.name} position`].z;
-
-        bone.rotation.x = this.viewerGui.allModelControls['Human Controls'][`${bone.name} rotation`].x * (2 * Math.PI) / 360;
-        bone.rotation.y = this.viewerGui.allModelControls['Human Controls'][`${bone.name} rotation`].y * (2 * Math.PI) / 360;
-        bone.rotation.z = this.viewerGui.allModelControls['Human Controls'][`${bone.name} rotation`].z * (2 * Math.PI) / 360;
-      }
-      human.mesh.skeleton.update();
-
-      // update uniforms
-      let rotQuaternions = human.mesh.material.uniforms.rotQuaternions.value;
-      let transQuaternions = human.mesh.material.uniforms.transQuaternions.value;
-      for (let i=0; i < bones.length; i++) {
-        rotQuaternions[i] = bones[i].getWorldQuaternion().normalize();
-        let position = bones[i].getWorldPosition().multiplyScalar(0.5);
-        position = (new THREE.Quaternion(position.x, position.y, position.z, 0)).multiply(rotQuaternions[i]);
-        transQuaternions[i] = position;
-      }
-
-      // update skeleton helper
-      human.skeleton.update();
-    }
-
-
+    this.updateModel('Human', this.skinningType == 'dual quaternion');
     this.controls.threeControls.update();
     this.render();
   }
@@ -111,6 +85,50 @@ export default class Main {
    */
   render() {
     this.renderer.threeRenderer.render(this.scene, this.camera.threeCamera);
+  }
+
+  /**
+   * Updates joint parameters based on GUI controls
+   * @param {string} modelName
+   * @param {bool} dual : whether dual quaternion skinning is used
+   */
+  updateModel(modelName, dual) {
+    let human = this.models[modelName];
+    if (human !== null) {
+      let skeleton = human.mesh.skeleton;
+      let bones = human.mesh.skeleton.bones;
+      for (let bone of bones) {
+        bone.position.x = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} position`].x;
+        bone.position.y = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} position`].y;
+        bone.position.z = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} position`].z;
+
+        bone.rotation.x = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} rotation`].x * (2 * Math.PI) / 360;
+        bone.rotation.y = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} rotation`].y * (2 * Math.PI) / 360;
+        bone.rotation.z = this.viewerGui.allModelControls[`${modelName} Controls`][`${bone.name} rotation`].z * (2 * Math.PI) / 360;
+      }
+
+      // update uniforms for dual quaternion skinning
+      if (dual) {
+        let rotQuaternions = human.mesh.material.uniforms.rotQuaternions.value;
+        let transQuaternions = human.mesh.material.uniforms.transQuaternions.value;
+        for (let i=0; i < bones.length; i++) {
+          let offsetTransformWorld = new THREE.Matrix4();
+          offsetTransformWorld.multiplyMatrices(bones[i].matrixWorld, skeleton.boneInverses[i]);
+          let pos = new THREE.Vector3();
+          let quat = new THREE.Quaternion();
+          let scale = new THREE.Vector3();
+          offsetTransformWorld.decompose(pos, quat, scale);
+
+          rotQuaternions[i] = quat;
+          let position = pos.multiplyScalar(0.5);
+          position = (new THREE.Quaternion(pos.x, pos.y, pos.z, 0)).multiply(quat);
+          transQuaternions[i] = position;
+        }
+      }
+
+      // update skeleton helper
+      human.skeleton.update();
+    }
   }
 
   /**
@@ -146,44 +164,55 @@ export default class Main {
 
   /**
    * loads mesh and skeleton from JSON file
+   * using a custom shader if `type` is given
    * @param {string} filename
    * @param {string} modelName
+   * @param {string} type of shader
    */
-  loadJSONModel(filename, modelName) {
+  loadJSONModel(filename, modelName, type) {
     let loader = new THREE.JSONLoader();
     loader.load(filename, (geometry, materials) => {
-      let rotQuaternions = [];
-      let transQuaternions = [];
-      for (let i=0; i < geometry.bones.length; i++) {
-        let bone = geometry.bones[i];
-        let rotQuat = new THREE.Quaternion(bone.rotq[0], bone.rotq[1], bone.rotq[2]);
-        rotQuaternions.push(rotQuat);
-        let transQuat = new THREE.Quaternion(0.5 * bone.pos[0], 0.5 * bone.pos[1], 0.5 * bone.pos[2], 0);
-        transQuat.multiply(rotQuat);
-        transQuaternions.push(transQuat);
-      }
-      let uniforms = {
-        rotQuaternions: {type: 'v4v', value: rotQuaternions},
-        transQuaternions: {type: 'v4v', value: transQuaternions},
-      };
+      let material;
+      switch(type) {
+        case 'linear':
+          material = Shader.createRawShaderMaterial(Shader.LINEAR_BLEND_SKINNING_VERT, Shader.BASIC_FRAG);
+          break;
+        case 'dual quaternion':
+          let rotQuaternions = [];
+          let transQuaternions = [];
+          for (let i=0; i < geometry.bones.length; i++) {
+            let bone = geometry.bones[i];
+            let rotQuat = new THREE.Quaternion(bone.rotq[0], bone.rotq[1], bone.rotq[2]);
+            rotQuaternions.push(rotQuat);
+            let transQuat = new THREE.Quaternion(0.5 * bone.pos[0], 0.5 * bone.pos[1], 0.5 * bone.pos[2], 0);
+            transQuat.multiply(rotQuat);
+            transQuaternions.push(transQuat);
+          }
+          let uniforms = {
+            rotQuaternions: {type: 'v4v', value: rotQuaternions},
+            transQuaternions: {type: 'v4v', value: transQuaternions},
+          };
 
-      // let material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG);
-      let material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
-      // let material = Shader.createRawShaderMaterial(Shader.LINEAR_BLEND_SKINNING_VERT, Shader.BASIC_FRAG);
+          material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
+
+          break;
+        default:
+          material = new THREE.MultiMaterial(materials);
+      }
+
       let mesh = new THREE.SkinnedMesh(geometry, material);
 
       // setting both the flags below seem to be necessary for getting
       // the custom skinning shader to work
       mesh.material.skinning = true;
       mesh.skeleton.useVertexTexture = false;
-      console.log(mesh.skeleton);
 
-      // Not sure how to make helper also rotate with mesh bones?
       let skeletonHelper = new THREE.SkeletonHelper(mesh);
       skeletonHelper.material.linewidth = 10;
       skeletonHelper.visible = false;
       mesh.visible = false;
       mesh.name = modelName;
+
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
       this.models[modelName] = {
