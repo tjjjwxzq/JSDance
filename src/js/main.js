@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 // ensure MTLLoader, OBJLoader, and OrbitControl
 // properties are added to THREE object
@@ -5,7 +6,11 @@ import * as _mtl from 'utils/mtlLoader';
 import * as _obj from 'utils/objLoader';
 import * as _orb from 'utils/orbitControls';
 import SkinnedMeshControls from 'utils/skinnedMeshControls';
+// import EndEffectorControls from 'utils/endEffectorControls';
+import {buildAxes} from 'utils/axes';
+import IK from 'utils/IK';
 
+import Arm from 'components/arm';
 import Camera from 'components/camera';
 import Controls from 'components/controls';
 import Renderer from 'components/renderer';
@@ -14,7 +19,7 @@ import ViewerGui from 'components/viewerGui';
 import Shader from 'components/shader';
 import Config from 'config';
 
-import humanJSON from'human.json';
+import humanJSON from 'human.json';
 
 /**
  * ties components together into core threejs program
@@ -58,6 +63,10 @@ export default class Main {
     // GUI
     this.viewerGui = new ViewerGui(Object.keys(this.models));
 
+    // Axes for debugging
+    var axes = buildAxes(1000);
+    this.scene.add(axes);
+    
     // Listen for model load and GUI events
     window.addEventListener('model-loaded', this.onModelLoaded.bind(this));
     window.addEventListener('on-change-model', this.onChangeModel.bind(this));
@@ -76,6 +85,7 @@ export default class Main {
     // need to bind to this object or `this` will be undefined
     requestAnimationFrame(this.animate.bind(this));
     this.updateModel('Human', this.skinningType == 'dual quaternion');
+    this.updateIK();
     this.controls.threeControls.update();
     this.render();
   }
@@ -130,6 +140,43 @@ export default class Main {
       human.skeleton.update();
     }
   }
+
+  /**
+   *
+   */
+  updateIK() {
+    //
+    if (this.models[this.modelName] !== null) {
+      let human = this.models[this.modelName];
+      let arms = human.arms;
+      let controls = this.viewerGui.allIKControls[this.modelName];
+      
+      // Update target positions
+      for (let armName in arms) {
+        if (arms.hasOwnProperty(armName)) {
+          let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
+          arms[armName].setTargetPosition(targetPosition);
+        }
+      }
+      
+      // Get new angles
+      for (let armName in arms) {
+        if (arms.hasOwnProperty(armName)) {
+          let arm = arms[armName];
+          let angles = IK.solve(arm);
+          console.log(angles);
+
+          for (let i = 0; i < arm.joints.length; i++) {
+            let joint = arm.joints[i];
+            
+            joint.rotateOnAxis(arm.axis, angles[i]);
+            
+          }
+        }
+      }
+    }
+  }
+  
 
   /**
    * loads mesh from .obj file
@@ -204,8 +251,7 @@ export default class Main {
 
       // setting both the flags below seem to be necessary for getting
       // the custom skinning shader to work
-      mesh.material.skinning = true;
-      mesh.skeleton.useVertexTexture = false;
+      mesh.material.skinning = true;      mesh.skeleton.useVertexTexture = false;
 
       let skeletonHelper = new THREE.SkeletonHelper(mesh);
       skeletonHelper.material.linewidth = 10;
@@ -213,11 +259,35 @@ export default class Main {
       mesh.visible = false;
       mesh.name = modelName;
 
+      // Load arms
+      let arms = {}
+      let armName = 'right hand';
+      let baseIdx = Config.arms[armName].base;
+      let endIdx = Config.arms[armName].end;
+      let axisArr = Config.arms[armName].axis;
+      let axis = new THREE.Vector3(...axisArr);
+      
+      let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
+      arms['right hand'] = arm;
+      // for (let armName in Config.arms) {
+      //   if (Config.arms.hasOwnProperty(armName)) {
+      //     let baseIdx = Config.arms[armName].base;
+      //     let endIdx = Config.arms[armName].end;
+      //     let axisArr = Config.arms[armName].axis;
+      //     let axis = new THREE.Vector3(...axisArr);
+          
+      //     let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
+          
+      //     arms[armName] = arm;
+      //   }
+      // }
+      
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
       this.models[modelName] = {
         skeleton: skeletonHelper,
         mesh: mesh,
+        arms: arms
       };
 
       let data = {
@@ -242,8 +312,21 @@ export default class Main {
     if (this.models[modelName].mesh !== undefined) {
       console.log(this.models[modelName].mesh.skeleton.bones);
       this.viewerGui.addAllModelControls(
-      SkinnedMeshControls.parseMesh(this.models[modelName].mesh), SkinnedMeshControls.parseMesh(this.models[modelName].mesh));
+        SkinnedMeshControls.parseMesh(this.models[modelName].mesh), SkinnedMeshControls.parseMesh(this.models[modelName].mesh));
+      this.viewerGui.addIKControls(modelName, this.models[modelName].arms);
     }
+    // Debugging cube
+
+    /* varcube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
+     * var pos = this.models[modelName].mesh.skeleton.bones[7].parent.parent.getWorldPosition();
+     * console.log(this.models[modelName].mesh.skeleton.bones[7].parent.parent.name)
+     * cube.position.set( pos.x, pos.y, pos.z );
+     * console.log(pos);
+     * this.scene.add( cube );
+     */
+
+    
+    
   }
 
   /**
