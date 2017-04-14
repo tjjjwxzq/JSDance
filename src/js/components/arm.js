@@ -12,14 +12,12 @@ export default class Arm {
    */
   constructor(base, end, axis, targetPosition) {
     this.joints = [];
-    this.targetPosition = (targetPosition === undefined) ? end.getWorldPosition() : targetPosition; 
-    console.log(this.targetPosition);
+    this.targetPosition = (targetPosition === undefined) ? end.getWorldPosition() : targetPosition;
     this.addJoints(base, end);
     this.axis = axis;
   }
 
   addJoints(base, end) {
-    console.log(end);
     let curr = end;
 
     // List of joints from end to base
@@ -32,6 +30,10 @@ export default class Arm {
 
   getEndEffector() {
     return this.joints[0];
+  }
+
+  getEndEffectorPos() {
+    return this.getEndEffector().getWorldPosition();
   }
 
   getAxis() {

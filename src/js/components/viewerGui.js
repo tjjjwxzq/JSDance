@@ -39,9 +39,9 @@ export default class ViewerGui {
           z: arms[arm].targetPosition.z,
         };
         let ff = f.addFolder(arm);
-        ff.add(this.allIKControls[modelName][arm], 'x');
-        ff.add(this.allIKControls[modelName][arm], 'y');
-        ff.add(this.allIKControls[modelName][arm], 'z');
+        ff.add(this.allIKControls[modelName][arm], 'x', -10, 10, 0.1);
+        ff.add(this.allIKControls[modelName][arm], 'y', -10, 10, 0.1);
+        ff.add(this.allIKControls[modelName][arm], 'z', -10, 10, 0.1);
       }
     }
   }

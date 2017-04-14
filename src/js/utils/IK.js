@@ -1,9 +1,13 @@
 import * as THREE from 'three';
 import * as numeric from 'numeric';
 
+/**
+ * Utility class for IK solver
+ */
 export default class IK {
   /**
-   *
+   * @param {object} arm : Arm instance
+   * @return {array} array of updates to joint angles
    */
   static solve(arm) {
     let J = this.computeJacobian(arm);
@@ -11,9 +15,9 @@ export default class IK {
   }
 
   /**
-   * @param arm: Arm instance
-   * @param axis: THREE Vector3 local axis of hinge joints
-   * @return J: 3 x joints.length nested array
+   * @param {object} arm: Arm instance
+   * @param {object} axis: THREE Vector3 local axis of hinge joints
+   * @return {array} J: 3 x joints.length nested array
    */
   static computeJacobian(arm) {
     let axis = arm.getAxis();
@@ -22,7 +26,7 @@ export default class IK {
     for(let i = 0; i < arm.joints.length; i++) {
       let jointPos = arm.joints[i].getWorldPosition();
 
-      // Calculate vector from joint to end 
+      // Calculate vector from joint to end
       let jointToEndEffector = endEffectorPos.clone();
       jointToEndEffector.sub(jointPos);
 
@@ -36,23 +40,21 @@ export default class IK {
       // Get direction
       let direction = new THREE.Vector3();
       direction.crossVectors(axisGlobal, jointToEndEffector);
-      
+
       J[0].push(direction.x);
       J[1].push(direction.y);
       J[2].push(direction.z);
     }
-    console.log(arm.joints);
-    console.log(J);
     return J;
   }
 
   /**
-   * @param jacobian: result from computeJacobian()
-   * @param arm: Arm instance
-   * @return angleUpdate: joints.length array of change in angles
+   * @param {array} jacobian: result from computeJacobian()
+   * @param {object} arm: Arm instance
+   * @return {array} angleUpdate: joints.length array of change in angles
    */
   static getAngleUpdate(jacobian, arm) {
-    let alpha = 0.001; 
-    return alpha * numeric.dot(numeric.transpose(jacobian), arm.getError().toArray());
+    let alpha = 0.01;
+    return numeric.dot(numeric.transpose(jacobian), arm.getError().toArray()).map((x) => x * alpha);
   }
 }

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export function buildAxes(length)  {
-  var axes = new THREE.Object3D();
+  let axes = new THREE.Object3D();
 
   axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ), 0xFF0000, false ) ); // +X
   axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000, true) ); // -X
@@ -11,12 +11,11 @@ export function buildAxes(length)  {
   axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF, true ) ); // -Z
 
   return axes;
-
 }
 
 function buildAxis( src, dst, colorHex, dashed ) {
-  var geom = new THREE.Geometry(),
-      mat; 
+  let geom = new THREE.Geometry();
+  let mat;
 
   if(dashed) {
     mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
@@ -28,7 +27,7 @@ function buildAxis( src, dst, colorHex, dashed ) {
   geom.vertices.push( dst.clone() );
   geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
 
-  var axis = new THREE.Line( geom, mat, THREE.LinePieces );
+  let axis = new THREE.Line( geom, mat, THREE.LineSegments );
   return axis;
 
 }
