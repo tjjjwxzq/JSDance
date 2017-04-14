@@ -91,7 +91,7 @@ export default class Main {
     this.updateIK();
     this.controls.threeControls.update();
 
-    var pos = this.viewerGui.allIKControls.Human['right hand'];
+    var pos = this.viewerGui.allIKControls.Human['head']; 
     this.cube.position.set( pos.x, pos.y, pos.z );
     
     this.render();
@@ -163,22 +163,20 @@ export default class Main {
       let human = this.models[this.modelName];
       let arms = human.arms;
       let controls = this.viewerGui.allIKControls[this.modelName];
-
+      console.log('updateing IK');
       // Update target positions
       for (let armName in arms) {
         if (arms.hasOwnProperty(armName)) {
           let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
           let arm = arms[armName];
           arm.setTargetPosition(targetPosition);
-
+          
           // Solve for and set angles
           for(let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
-            if (armName === 'right hand')
-              console.log(angles);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
-              let currentAngle = joint.rotation.toVector3().dot(arm.axis);
+              let currentAngle = joint.rotation.toVector3().dot(joint.axis);
               let newAngle = currentAngle + angles[i];
               let angleUpdate = angles[i];
 
@@ -194,7 +192,11 @@ export default class Main {
               } else if (newAngle < min) {
                 angleUpdate = min - currentAngle;
               }
-              joint.rotateOnAxis(arm.axis, angleUpdate);
+              if (armName === 'head') {
+                console.log(angleUpdate + ' ' + angles[0]);
+                // console.log(joint.rotation.y);
+              }
+              joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
         }
@@ -310,7 +312,6 @@ export default class Main {
           arms[armName] = arm;
         }
       }
-      console.log(arms['right foot'].joints);
 
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
@@ -338,7 +339,6 @@ export default class Main {
     if (this.viewerGui.controls['Active Model'] === modelName) {
       this.toggleModel(this.models[modelName], true, this.viewerGui.controls['Show Skeleton']);
     }
-
     if (this.models[modelName].mesh !== undefined) {
       console.log(this.models[modelName].mesh.skeleton.bones);
       this.viewerGui.addAllModelControls(

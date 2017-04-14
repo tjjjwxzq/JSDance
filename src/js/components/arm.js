@@ -21,8 +21,8 @@ export default class Arm {
       let radConstraints = constraints[i].map(x => x / 360 * 2 * Math.PI);
       this.joints[i].constraints = radConstraints;
       this.joints[i].type = types[i];
+      this.joints[i].axis = axis;
     }
-    this.axis = axis;
   }
 
   addJoints(base, end) {
@@ -42,10 +42,6 @@ export default class Arm {
 
   getEndEffectorPos() {
     return this.getEndEffector().getWorldPosition();
-  }
-
-  getAxis() {
-    return this.axis;
   }
 
   getError() {
