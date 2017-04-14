@@ -11,8 +11,8 @@ export default class IK {
    */
   static solve(arm) {
     let J = this.computeJacobian(arm);
-    if (arm.joints.length === 1)
-      console.log(J);
+    // if (arm.joints.length === 1)
+    //   console.log(J);
     return this.getAngleUpdate(J, arm);
   }
 

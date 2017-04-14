@@ -159,11 +159,9 @@ export default class Main {
   updateIK() {
     //
     if (this.models[this.modelName] !== null) {
-      // console.log("IK UPDATE");
       let human = this.models[this.modelName];
       let arms = human.arms;
       let controls = this.viewerGui.allIKControls[this.modelName];
-      console.log('updateing IK');
       // Update target positions
       for (let armName in arms) {
         if (arms.hasOwnProperty(armName)) {
@@ -192,10 +190,10 @@ export default class Main {
               } else if (newAngle < min) {
                 angleUpdate = min - currentAngle;
               }
-              if (armName === 'head') {
-                console.log(angleUpdate + ' ' + angles[0]);
-                // console.log(joint.rotation.y);
-              }
+              // if (armName === 'head') {
+              //   console.log(angleUpdate + ' ' + angles[0]);
+              //   // console.log(joint.rotation.y);
+              // }
               joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
