@@ -29,4 +29,29 @@ export default {
     modelName: 'Human',
     skinningType: 'dual quaternion',
   },
+  /**
+   * object containing all 5 end effectors
+   * key: name of end effector
+   * value: index of end effector in mesh.skeleton.bones[i]
+   */
+
+  arms: {
+    'right hand': {'end': 16,
+                   'base': 14,
+                   'axis': [0, 1, 0]
+                  },
+    'left hand': {'end': 20,
+                  'base': 18,
+                  'axis': [0, 1, 0]
+                 },
+    'right foot': {'end': 12,
+                   'base': 9,
+                   'axis': [0, 1, 0]
+                  }, 
+    'left foot': {'end': 7,
+                  'base': 5,
+                  'axis': [0, 1, 0]
+                 }
+  }
 };
+  

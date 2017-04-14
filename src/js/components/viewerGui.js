@@ -31,7 +31,7 @@ export default class ViewerGui {
     this.allIKControls = {};
     this.allIKControls[modelName] = {};
 
-    for (arm in arms) {
+    for (let arm in arms) {
       if (arms.hasOwnProperty(arm)) {
         this.allIKControls[modelName][arm] = {
           x: arms[arm].targetPosition.x,
