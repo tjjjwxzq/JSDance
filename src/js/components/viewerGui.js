@@ -1,6 +1,8 @@
-import * as THREE from 'three';
 import dat from 'dat.gui';
 
+/**
+ * class for initializing GUI controls
+ */
 export default class ViewerGui {
   /**
    * constructor
@@ -20,8 +22,34 @@ export default class ViewerGui {
   }
 
   /**
+   * adds target position controls for IK for every arm
+   * @param {string} modelName : name of the model
+   * @param {object} arms : arms object
+   */
+  addIKControls(modelName, arms) {
+    let f = this.gui.addFolder(`${modelName} IK Target Controls`);
+    this.allIKControls = {};
+    this.allIKControls[modelName] = {};
+
+    for (arm in arms) {
+      if (arms.hasOwnProperty(arm)) {
+        this.allIKControls[modelName][arm] = {
+          x: arms[arm].targetPosition.x,
+          y: arms[arm].targetPosition.y,
+          z: arms[arm].targetPosition.z,
+        };
+        let ff = f.addFolder(arm);
+        ff.add(this.allIKControls[modelName][arm], 'x');
+        ff.add(this.allIKControls[modelName][arm], 'y');
+        ff.add(this.allIKControls[modelName][arm], 'z');
+      }
+    }
+  }
+
+  /**
    * adds controls for all models to gui
    * @param {object} allModelControls : object containing model controls
+   * @param {object} allDefaultControls : copy of original controls for reset
    * first level keys are the model names
    */
   addAllModelControls(allModelControls, allDefaultControls) {
