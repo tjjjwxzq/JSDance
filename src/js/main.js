@@ -71,10 +71,11 @@ export default class Main {
     window.addEventListener('on-change-model', this.onChangeModel.bind(this));
     window.addEventListener('on-toggle-skeleton', this.onToggleSkeleton.bind(this));
 
+    this.cube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
+    this.scene.add(this.cube);
     // Start animation/render
     this.animate();
   }
-
 
   /**
    * render loop
@@ -89,6 +90,10 @@ export default class Main {
       this.updateUniforms();
     this.updateIK();
     this.controls.threeControls.update();
+
+    var pos = this.viewerGui.allIKControls.Human['right hand'];
+    this.cube.position.set( pos.x, pos.y, pos.z );
+    
     this.render();
   }
 
@@ -167,21 +172,29 @@ export default class Main {
           arm.setTargetPosition(targetPosition);
 
           // Solve for and set angles
-          for(let i=0; i < 1; ++i) {
-            // console.log(arm.targetPosition);
-            // console.log(arm.getEndEffectorPos());
-              // console.log(arm.getError());
-            // console.log(arm.getError().z);
-            // console.log(arm.getError().length());
+          for(let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
-            console.log(angles);
+            if (armName === 'right hand')
+              console.log(angles);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
-              // joint.setRotationFromAxisAngle(arm.axis, angles[i]);
-              joint.rotateOnAxis(arm.axis, angles[i]);
-              if (i == 1) {
-                console.log(joint.rotation.y);
+              let currentAngle = joint.rotation.toVector3().dot(arm.axis);
+              let newAngle = currentAngle + angles[i];
+              let angleUpdate = angles[i];
+
+              // Clamp angle of joint
+              let max = joint.constraints[1];
+              let min = joint.constraints[0];
+              /* if (joint.name == 'Bone.012') {
+               *   console.log("max: " + max + " min: " + min);
+               *   console.log("new Angle:" + newAngle);
+               * }*/
+              if (newAngle > max) {
+                angleUpdate = max - currentAngle;
+              } else if (newAngle < min) {
+                angleUpdate = min - currentAngle;
               }
+              joint.rotateOnAxis(arm.axis, angleUpdate);
             }
           }
         }
@@ -273,27 +286,31 @@ export default class Main {
 
       // Load arms
       let arms = {}
-      let armName = 'right hand';
-      let baseIdx = Config.arms[armName].base;
-      let endIdx = Config.arms[armName].end;
-      let axisArr = Config.arms[armName].axis;
-      let axis = new THREE.Vector3(...axisArr);
+      // let armName = 'right hand';
+      // let baseIdx = Config.arms[armName].base;
+      // let endIdx = Config.arms[armName].end;
+      // let axisArr = Config.arms[armName].axis;
+      // let axis = new THREE.Vector3(...axisArr);
 
-      let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
-      arms['right hand'] = arm;
+      // let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
+      // arms['right hand'] = arm;
 
-      // for (let armName in Config.arms) {
-      //   if (Config.arms.hasOwnProperty(armName)) {
-      //     let baseIdx = Config.arms[armName].base;
-      //     let endIdx = Config.arms[armName].end;
-      //     let axisArr = Config.arms[armName].axis;
-      //     let axis = new THREE.Vector3(...axisArr);
+      for (let armName in Config.arms) {
+        let armConfig = Config.arms[armName];
+        if (Config.arms.hasOwnProperty(armName)) {
+          let baseIdx = armConfig.base;
+          let endIdx = armConfig.end;
+          let axisArr = armConfig.axis;
+          let axis = new THREE.Vector3(...axisArr);
+          let constraints = armConfig.constraints;
+          let types = armConfig.types;
 
-      //     let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
+          let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis, constraints, types);
 
-      //     arms[armName] = arm;
-      //   }
-      // }
+          arms[armName] = arm;
+        }
+      }
+      console.log(arms['right foot'].joints);
 
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
