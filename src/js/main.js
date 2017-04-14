@@ -149,12 +149,11 @@ export default class Main {
   }
 
   /**
-   *
+   * update the target positions and joint angles
+   * with IK
    */
   updateIK() {
-    //
     if (this.models[this.modelName] !== null) {
-      // console.log("IK UPDATE");
       let human = this.models[this.modelName];
       let arms = human.arms;
       let controls = this.viewerGui.allIKControls[this.modelName];
@@ -167,21 +166,11 @@ export default class Main {
           arm.setTargetPosition(targetPosition);
 
           // Solve for and set angles
-          for(let i=0; i < 1; ++i) {
-            // console.log(arm.targetPosition);
-            // console.log(arm.getEndEffectorPos());
-              // console.log(arm.getError());
-            // console.log(arm.getError().z);
-            // console.log(arm.getError().length());
+          for (let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
-            console.log(angles);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
-              // joint.setRotationFromAxisAngle(arm.axis, angles[i]);
               joint.rotateOnAxis(arm.axis, angles[i]);
-              if (i == 1) {
-                console.log(joint.rotation.y);
-              }
             }
           }
         }
@@ -272,28 +261,19 @@ export default class Main {
       mesh.name = modelName;
 
       // Load arms
-      let arms = {}
-      let armName = 'right hand';
-      let baseIdx = Config.arms[armName].base;
-      let endIdx = Config.arms[armName].end;
-      let axisArr = Config.arms[armName].axis;
-      let axis = new THREE.Vector3(...axisArr);
+      let arms = [];
+      for (let armName in Config.arms) {
+        if (Config.arms.hasOwnProperty(armName)) {
+          let baseIdx = Config.arms[armName].base;
+          let endIdx = Config.arms[armName].end;
+          let axisArr = Config.arms[armName].axis;
+          let axis = new THREE.Vector3(...axisArr);
 
-      let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
-      arms['right hand'] = arm;
+          let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
 
-      // for (let armName in Config.arms) {
-      //   if (Config.arms.hasOwnProperty(armName)) {
-      //     let baseIdx = Config.arms[armName].base;
-      //     let endIdx = Config.arms[armName].end;
-      //     let axisArr = Config.arms[armName].axis;
-      //     let axis = new THREE.Vector3(...axisArr);
-
-      //     let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
-
-      //     arms[armName] = arm;
-      //   }
-      // }
+          arms[armName] = arm;
+        }
+      }
 
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
