@@ -75,7 +75,6 @@ void main() {
     vec4 transQuatZ = getTransQuaternion(skinIndex.z);
     vec4 rotQuatW = getRotQuaternion(skinIndex.w);
     vec4 transQuatW = getTransQuaternion(skinIndex.w);
-    debug = transQuatY;
 
     // blend dual quaternions
     vec4 skinRotQuaternion = vec4(0.0);
@@ -140,7 +139,6 @@ void main() {
     // get transformed position
     vec4 skinVertex = vec4(position, 1.0);
     vec4 transformedSkinVertex = skinMatrix * skinVertex;
-    debug = transformedSkinVertex;
     // modelViewMatrix and projectionMatrix are built-in uniforms
     vec4 mvPosition = modelViewMatrix * transformedSkinVertex;
   #else

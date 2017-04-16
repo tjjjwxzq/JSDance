@@ -73,6 +73,7 @@ export default class Main {
 
     this.cube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
     this.scene.add(this.cube);
+
     // Start animation/render
     this.animate();
   }
@@ -91,9 +92,9 @@ export default class Main {
     this.updateIK();
     this.controls.threeControls.update();
 
-    var pos = this.viewerGui.allIKControls.Human['head']; 
-    this.cube.position.set( pos.x, pos.y, pos.z );
-    
+    // let pos = this.viewerGui.allIKControls.Human['head'];
+    // this.cube.position.set( pos.x, pos.y, pos.z );
+
     this.render();
   }
 
@@ -168,7 +169,7 @@ export default class Main {
           let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
           let arm = arms[armName];
           arm.setTargetPosition(targetPosition);
-          
+
           // Solve for and set angles
           for(let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
@@ -181,19 +182,11 @@ export default class Main {
               // Clamp angle of joint
               let max = joint.constraints[1];
               let min = joint.constraints[0];
-              /* if (joint.name == 'Bone.012') {
-               *   console.log("max: " + max + " min: " + min);
-               *   console.log("new Angle:" + newAngle);
-               * }*/
               if (newAngle > max) {
                 angleUpdate = max - currentAngle;
               } else if (newAngle < min) {
                 angleUpdate = min - currentAngle;
               }
-              // if (armName === 'head') {
-              //   console.log(angleUpdate + ' ' + angles[0]);
-              //   // console.log(joint.rotation.y);
-              // }
               joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
@@ -264,7 +257,7 @@ export default class Main {
             transQuaternions: {type: 'v4v', value: transQuaternions},
           };
 
-          material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
+          material = Shader.createRawShaderMaterial(Shader.DUAL_QUAT_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
 
           break;
         default:
@@ -285,19 +278,10 @@ export default class Main {
       mesh.name = modelName;
 
       // Load arms
-      let arms = {}
-      // let armName = 'right hand';
-      // let baseIdx = Config.arms[armName].base;
-      // let endIdx = Config.arms[armName].end;
-      // let axisArr = Config.arms[armName].axis;
-      // let axis = new THREE.Vector3(...axisArr);
-
-      // let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
-      // arms['right hand'] = arm;
-
+      let arms = {};
       for (let armName in Config.arms) {
-        let armConfig = Config.arms[armName];
         if (Config.arms.hasOwnProperty(armName)) {
+          let armConfig = Config.arms[armName];
           let baseIdx = armConfig.base;
           let endIdx = armConfig.end;
           let axisArr = armConfig.axis;

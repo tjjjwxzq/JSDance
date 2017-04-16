@@ -1,30 +1,32 @@
-import * as THREE from 'three';
-
 /**
  * Class to control arm
  */
-
 export default class Arm {
   /**
-   * @param base: (THREE bone) base
-   * @param end: (THREE bone) end
-   * @param axis: (THREE Vector3) rotation axis
-   * @param constraints: (array of 2-arrays) min and max angle constraints of each joint 
-   * @param types: (array) type of each joint - "hinge" or "ball"
+   * @param {object} base: (THREE bone) base
+   * @param {object} end: (THREE bone) end
+   * @param {object} axis: (THREE Vector3) rotation axis
+   * @param {array} constraints: (array of 2-arrays) min and max angle constraints of each joint
+   * @param {array} types: type of each joint - "hinge" or "ball"
+   * @param {object} targetPosition : (THREE Vector3) initial target position
    */
   constructor(base, end, axis, constraints, types, targetPosition) {
-    console.log(types);
     this.targetPosition = (targetPosition === undefined) ? end.getWorldPosition() : targetPosition;
     this.joints = [];
     this.addJoints(base, end);
     for (let i = 0; i < this.joints.length; i++) {
-      let radConstraints = constraints[i].map(x => x / 360 * 2 * Math.PI);
+      let radConstraints = constraints[i].map((x) => x / 360 * 2 * Math.PI);
       this.joints[i].constraints = radConstraints;
       this.joints[i].type = types[i];
       this.joints[i].axis = axis;
     }
   }
 
+  /**
+   * adds joints for this arm
+   * @param {object} base THREE Bone
+   * @param {object} end THREE Bone
+   */
   addJoints(base, end) {
     let curr = end;
 
