@@ -1,4 +1,4 @@
-
+import * as createjs from 'components/soundjs';
 import * as THREE from 'three';
 // ensure MTLLoader, OBJLoader, and OrbitControl
 // properties are added to THREE object
