@@ -60,6 +60,14 @@ export default {
         },
       },
       {
+        test: /soundjs\.js$/,
+        include: JS_PATH,
+        exclude: [/node_modules/],
+        use: {
+          loader: 'imports-loader?this=>window',
+        },
+      },
+      {
         test: /\.glsl$/,
         include: GLSL_PATH,
         use: {

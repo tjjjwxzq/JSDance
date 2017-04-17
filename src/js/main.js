@@ -1,4 +1,4 @@
-import * as createjs from 'components/soundjs';
+import {createjs} from 'imports-loader?this=>window!components/soundjs';
 import * as THREE from 'three';
 // ensure MTLLoader, OBJLoader, and OrbitControl
 // properties are added to THREE object
@@ -192,7 +192,7 @@ export default class Main {
           }
 
           if(armName == 'right hand') {
-            console.log(arm.joints[2].rotation);
+            // console.log(arm.joints[2].rotation);
           }
 
         }

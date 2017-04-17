@@ -30,8 +30,10 @@
 //##############################################################################
 // version.js
 //##############################################################################
+//
+var exports = module.exports = {};
 
-this.createjs = this.createjs || {};
+exports.createjs = this.createjs = this.createjs || {};
 
 (function () {
 
@@ -308,18 +310,18 @@ this.createjs = this.createjs||{};
 	 *
 	 * You can either extend EventDispatcher or mix its methods into an existing prototype or instance by using the
 	 * EventDispatcher {{#crossLink "EventDispatcher/initialize"}}{{/crossLink}} method.
-	 * 
+	 *
 	 * Together with the CreateJS Event class, EventDispatcher provides an extended event model that is based on the
 	 * DOM Level 2 event model, including addEventListener, removeEventListener, and dispatchEvent. It supports
 	 * bubbling / capture, preventDefault, stopPropagation, stopImmediatePropagation, and handleEvent.
-	 * 
+	 *
 	 * EventDispatcher also exposes a {{#crossLink "EventDispatcher/on"}}{{/crossLink}} method, which makes it easier
-	 * to create scoped listeners, listeners that only run once, and listeners with associated arbitrary data. The 
+	 * to create scoped listeners, listeners that only run once, and listeners with associated arbitrary data. The
 	 * {{#crossLink "EventDispatcher/off"}}{{/crossLink}} method is merely an alias to
 	 * {{#crossLink "EventDispatcher/removeEventListener"}}{{/crossLink}}.
-	 * 
+	 *
 	 * Another addition to the DOM Level 2 model is the {{#crossLink "EventDispatcher/removeAllEventListeners"}}{{/crossLink}}
-	 * method, which can be used to listeners for all events, or listeners for a specific event. The Event object also 
+	 * method, which can be used to listeners for all events, or listeners for a specific event. The Event object also
 	 * includes a {{#crossLink "Event/remove"}}{{/crossLink}} method which removes the active listener.
 	 *
 	 * <h4>Example</h4>
@@ -341,25 +343,25 @@ this.createjs = this.createjs||{};
 	 *      instance.addEventListener("click", function(event) {
 	 *          console.log(instance == this); // false, scope is ambiguous.
 	 *      });
-	 *      
+	 *
 	 *      instance.on("click", function(event) {
 	 *          console.log(instance == this); // true, "on" uses dispatcher scope by default.
 	 *      });
-	 * 
+	 *
 	 * If you want to use addEventListener instead, you may want to use function.bind() or a similar proxy to manage
 	 * scope.
 	 *
 	 * <b>Browser support</b>
 	 * The event model in CreateJS can be used separately from the suite in any project, however the inheritance model
 	 * requires modern browsers (IE9+).
-	 *      
+	 *
 	 *
 	 * @class EventDispatcher
 	 * @constructor
 	 **/
 	function EventDispatcher() {
-	
-	
+
+
 	// private properties:
 		/**
 		 * @protected
@@ -367,7 +369,7 @@ this.createjs = this.createjs||{};
 		 * @type Object
 		 **/
 		this._listeners = null;
-		
+
 		/**
 		 * @protected
 		 * @property _captureListeners
@@ -394,10 +396,10 @@ this.createjs = this.createjs||{};
 // static public methods:
 	/**
 	 * Static initializer to mix EventDispatcher methods into a target object or prototype.
-	 * 
+	 *
 	 * 		EventDispatcher.initialize(MyClass.prototype); // add to the prototype of the class
 	 * 		EventDispatcher.initialize(myObject); // add to a specific instance
-	 * 
+	 *
 	 * @method initialize
 	 * @static
 	 * @param {Object} target The target object to inject EventDispatcher methods into. This can be an instance or a
@@ -413,7 +415,7 @@ this.createjs = this.createjs||{};
 		target._dispatchEvent = p._dispatchEvent;
 		target.willTrigger = p.willTrigger;
 	};
-	
+
 
 // public methods:
 	/**
@@ -448,20 +450,20 @@ this.createjs = this.createjs||{};
 		else { arr.push(listener); }
 		return listener;
 	};
-	
+
 	/**
 	 * A shortcut method for using addEventListener that makes it easier to specify an execution scope, have a listener
 	 * only run once, associate arbitrary data with the listener, and remove the listener.
-	 * 
+	 *
 	 * This method works by creating an anonymous wrapper function and subscribing it with addEventListener.
 	 * The wrapper function is returned for use with `removeEventListener` (or `off`).
-	 * 
+	 *
 	 * <b>IMPORTANT:</b> To remove a listener added with `on`, you must pass in the returned wrapper function as the listener, or use
 	 * {{#crossLink "Event/remove"}}{{/crossLink}}. Likewise, each time you call `on` a NEW wrapper function is subscribed, so multiple calls
 	 * to `on` with the same params will create multiple listeners.
-	 * 
+	 *
 	 * <h4>Example</h4>
-	 * 
+	 *
 	 * 		var listener = myBtn.on("click", handleClick, null, false, {count:3});
 	 * 		function handleClick(evt, data) {
 	 * 			data.count -= 1;
@@ -472,7 +474,7 @@ this.createjs = this.createjs||{};
 	 * 				// alternately: evt.remove();
 	 * 			}
 	 * 		}
-	 * 
+	 *
 	 * @method on
 	 * @param {String} type The string type of the event.
 	 * @param {Function | Object} listener An object with a handleEvent method, or a function that will be called when
@@ -524,12 +526,12 @@ this.createjs = this.createjs||{};
 			}
 		}
 	};
-	
+
 	/**
 	 * A shortcut to the removeEventListener method, with the same parameters and return value. This is a companion to the
 	 * .on method.
-	 * 
-	 * <b>IMPORTANT:</b> To remove a listener added with `on`, you must pass in the returned wrapper function as the listener. See 
+	 *
+	 * <b>IMPORTANT:</b> To remove a listener added with `on`, you must pass in the returned wrapper function as the listener. See
 	 * {{#crossLink "EventDispatcher/on"}}{{/crossLink}} for an example.
 	 *
 	 * @method off
@@ -592,7 +594,7 @@ this.createjs = this.createjs||{};
 			// redispatching an active event object, so clone it:
 			eventObj = eventObj.clone();
 		}
-		
+
 		// TODO: it would be nice to eliminate this. Maybe in favour of evtObj instanceof Event? Or !!evtObj.createEvent
 		try { eventObj.target = this; } catch (e) {} // try/catch allows redispatching of native events
 
@@ -625,12 +627,12 @@ this.createjs = this.createjs||{};
 		var listeners = this._listeners, captureListeners = this._captureListeners;
 		return !!((listeners && listeners[type]) || (captureListeners && captureListeners[type]));
 	};
-	
+
 	/**
 	 * Indicates whether there is at least one listener for the specified event type on this object or any of its
 	 * ancestors (parent, parent's parent, etc). A return value of true indicates that if a bubbling event of the
 	 * specified type is dispatched from this object, it will trigger at least one listener.
-	 * 
+	 *
 	 * This is similar to {{#crossLink "EventDispatcher/hasEventListener"}}{{/crossLink}}, but it searches the entire
 	 * event flow for a listener, not just this object.
 	 * @method willTrigger
@@ -670,7 +672,7 @@ this.createjs = this.createjs||{};
 			try { eventObj.currentTarget = this; } catch (e) {}
 			try { eventObj.eventPhase = eventPhase; } catch (e) {}
 			eventObj.removed = false;
-			
+
 			arr = arr.slice(); // to avoid issues with items being removed or added during the dispatch
 			for (var i=0; i<l && !eventObj.immediatePropagationStopped; i++) {
 				var o = arr[i];
@@ -701,7 +703,7 @@ this.createjs = this.createjs||{};
 	/**
 	 * Contains properties and methods shared by all events for use with
 	 * {{#crossLink "EventDispatcher"}}{{/crossLink}}.
-	 * 
+	 *
 	 * Note that Event objects are often reused, so you should never
 	 * rely on an event object's state outside of the call stack it was received in.
 	 * @class Event
@@ -711,8 +713,8 @@ this.createjs = this.createjs||{};
 	 * @constructor
 	 **/
 	function Event(type, bubbles, cancelable) {
-		
-	
+
+
 	// public properties:
 		/**
 		 * The type of event.
@@ -720,7 +722,7 @@ this.createjs = this.createjs||{};
 		 * @type String
 		 **/
 		this.type = type;
-	
+
 		/**
 		 * The object that generated an event.
 		 * @property target
@@ -729,7 +731,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.target = null;
-	
+
 		/**
 		 * The current target that a bubbling event is being dispatched from. For non-bubbling events, this will
 		 * always be the same as target. For example, if childObj.parent = parentObj, and a bubbling event
@@ -741,7 +743,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.currentTarget = null;
-	
+
 		/**
 		 * For bubbling events, this indicates the current event phase:<OL>
 		 * 	<LI> capture phase: starting from the top parent to the target</LI>
@@ -754,7 +756,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.eventPhase = 0;
-	
+
 		/**
 		 * Indicates whether the event will bubble through the display list.
 		 * @property bubbles
@@ -763,7 +765,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.bubbles = !!bubbles;
-	
+
 		/**
 		 * Indicates whether the default behaviour of this event can be cancelled via
 		 * {{#crossLink "Event/preventDefault"}}{{/crossLink}}. This is set via the Event constructor.
@@ -773,7 +775,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.cancelable = !!cancelable;
-	
+
 		/**
 		 * The epoch time at which this event was created.
 		 * @property timeStamp
@@ -782,7 +784,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.timeStamp = (new Date()).getTime();
-	
+
 		/**
 		 * Indicates if {{#crossLink "Event/preventDefault"}}{{/crossLink}} has been called
 		 * on this event.
@@ -792,7 +794,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.defaultPrevented = false;
-	
+
 		/**
 		 * Indicates if {{#crossLink "Event/stopPropagation"}}{{/crossLink}} or
 		 * {{#crossLink "Event/stopImmediatePropagation"}}{{/crossLink}} has been called on this event.
@@ -802,7 +804,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.propagationStopped = false;
-	
+
 		/**
 		 * Indicates if {{#crossLink "Event/stopImmediatePropagation"}}{{/crossLink}} has been called
 		 * on this event.
@@ -812,7 +814,7 @@ this.createjs = this.createjs||{};
 		 * @readonly
 		*/
 		this.immediatePropagationStopped = false;
-		
+
 		/**
 		 * Indicates if {{#crossLink "Event/remove"}}{{/crossLink}} has been called on this event.
 		 * @property removed
@@ -866,21 +868,21 @@ this.createjs = this.createjs||{};
 	p.stopImmediatePropagation = function() {
 		this.immediatePropagationStopped = this.propagationStopped = true;
 	};
-	
+
 	/**
 	 * Causes the active listener to be removed via removeEventListener();
-	 * 
+	 *
 	 * 		myBtn.addEventListener("click", function(evt) {
 	 * 			// do stuff...
 	 * 			evt.remove(); // removes this listener.
 	 * 		});
-	 * 
+	 *
 	 * @method remove
 	 **/
 	p.remove = function() {
 		this.removed = true;
 	};
-	
+
 	/**
 	 * Returns a clone of the Event instance.
 	 * @method clone
@@ -889,7 +891,7 @@ this.createjs = this.createjs||{};
 	p.clone = function() {
 		return new Event(this.type, this.bubbles, this.cancelable);
 	};
-	
+
 	/**
 	 * Provides a chainable shortcut method for setting a number of properties on the instance.
 	 *
@@ -6683,7 +6685,7 @@ this.createjs = this.createjs || {};
 
 	/**
 	 * Note this is only intended for use by advanced users.
-	 * <br />The scratch buffer that will be assigned to the buffer property of a source node on close.  
+	 * <br />The scratch buffer that will be assigned to the buffer property of a source node on close.
 	 * This is and should be the same scratch buffer referenced by {{#crossLink "WebAudioPlugin"}}{{/crossLink}}.
   	 * @property _scratchBuffer
 	 * @type {AudioBufferSourceNode}
