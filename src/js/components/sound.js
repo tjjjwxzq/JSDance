@@ -105,14 +105,14 @@ export default class Sound {
     for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
-
-            armPositions[armName].x = baseArmPositions[armName].x + (this.timeByteData[mapping[n]]-100)/255;
+            console.log(this.freqByteData[mapping[n]]);
+            armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128)/255;
             if (isNaN(armPositions[armName].x)) armPositions[armName].x = baseArmPositions[armName].x;
 
-            armPositions[armName].y = baseArmPositions[armName].y + (this.timeByteData[mapping[n+1]]-100)/255;
+            armPositions[armName].y = baseArmPositions[armName].y + (this.freqByteData[mapping[n+1]]-128)/255;
             if (isNaN(armPositions[armName].y)) armPositions[armName].y = baseArmPositions[armName].y;
 
-            armPositions[armName].z = baseArmPositions[armName].z + (this.timeByteData[mapping[n+2]]-100)/255;
+            armPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]-128)/255;
             if (isNaN(armPositions[armName].z)) armPositions[armName].z = baseArmPositions[armName].z;
 
             //console.log(armPositions[armName].x,armPositions[armName].y,armPositions[armName].z)
