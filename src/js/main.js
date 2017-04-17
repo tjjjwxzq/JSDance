@@ -71,10 +71,12 @@ export default class Main {
     window.addEventListener('on-change-model', this.onChangeModel.bind(this));
     window.addEventListener('on-toggle-skeleton', this.onToggleSkeleton.bind(this));
 
+    this.cube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
+    this.scene.add(this.cube);
+
     // Start animation/render
     this.animate();
   }
-
 
   /**
    * render loop
@@ -89,6 +91,10 @@ export default class Main {
       this.updateUniforms();
     this.updateIK();
     this.controls.threeControls.update();
+
+    // let pos = this.viewerGui.allIKControls.Human['head'];
+    // this.cube.position.set( pos.x, pos.y, pos.z );
+
     this.render();
   }
 
@@ -157,7 +163,6 @@ export default class Main {
       let human = this.models[this.modelName];
       let arms = human.arms;
       let controls = this.viewerGui.allIKControls[this.modelName];
-
       // Update target positions
       for (let armName in arms) {
         if (arms.hasOwnProperty(armName)) {
@@ -166,11 +171,23 @@ export default class Main {
           arm.setTargetPosition(targetPosition);
 
           // Solve for and set angles
-          for (let i=0; i < 10; ++i) {
+          for(let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
-              joint.rotateOnAxis(arm.axis, angles[i]);
+              let currentAngle = joint.rotation.toVector3().dot(joint.axis);
+              let newAngle = currentAngle + angles[i];
+              let angleUpdate = angles[i];
+
+              // Clamp angle of joint
+              let max = joint.constraints[1];
+              let min = joint.constraints[0];
+              if (newAngle > max) {
+                angleUpdate = max - currentAngle;
+              } else if (newAngle < min) {
+                angleUpdate = min - currentAngle;
+              }
+              joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
         }
@@ -240,7 +257,7 @@ export default class Main {
             transQuaternions: {type: 'v4v', value: transQuaternions},
           };
 
-          material = Shader.createRawShaderMaterial(Shader.DUAL_QUART_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
+          material = Shader.createRawShaderMaterial(Shader.DUAL_QUAT_SKINNING_VERT, Shader.BASIC_FRAG, uniforms);
 
           break;
         default:
@@ -261,6 +278,7 @@ export default class Main {
       mesh.name = modelName;
 
       // Load arms
+<<<<<<< HEAD
       let arms = [];
       for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
@@ -270,6 +288,20 @@ export default class Main {
           let axis = new THREE.Vector3(...axisArr);
 
           let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
+=======
+      let arms = {};
+      for (let armName in Config.arms) {
+        if (Config.arms.hasOwnProperty(armName)) {
+          let armConfig = Config.arms[armName];
+          let baseIdx = armConfig.base;
+          let endIdx = armConfig.end;
+          let axisArr = armConfig.axis;
+          let axis = new THREE.Vector3(...axisArr);
+          let constraints = armConfig.constraints;
+          let types = armConfig.types;
+
+          let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis, constraints, types);
+>>>>>>> ik-in-progress-broken
 
           arms[armName] = arm;
         }
@@ -301,7 +333,6 @@ export default class Main {
     if (this.viewerGui.controls['Active Model'] === modelName) {
       this.toggleModel(this.models[modelName], true, this.viewerGui.controls['Show Skeleton']);
     }
-
     if (this.models[modelName].mesh !== undefined) {
       console.log(this.models[modelName].mesh.skeleton.bones);
       this.viewerGui.addAllModelControls(

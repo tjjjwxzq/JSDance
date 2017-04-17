@@ -11,6 +11,8 @@ export default class IK {
    */
   static solve(arm) {
     let J = this.computeJacobian(arm);
+    // if (arm.joints.length === 1)
+    //   console.log(J);
     return this.getAngleUpdate(J, arm);
   }
 
@@ -20,32 +22,34 @@ export default class IK {
    * @return {array} J: 3 x joints.length nested array
    */
   static computeJacobian(arm) {
-    let axis = arm.getAxis();
     let J = [[], [], []]; // 3 x joints.length, first row is end
     let endEffectorPos = arm.getEndEffector().getWorldPosition();
     for(let i = 0; i < arm.joints.length; i++) {
-      let jointPos = arm.joints[i].getWorldPosition();
+      let joint = arm.joints[i];
+      let jointPos = joint.getWorldPosition();
 
       // Calculate vector from joint to end
       let jointToEndEffector = endEffectorPos.clone();
       jointToEndEffector.sub(jointPos);
 
+      let axis = joint.axis;
       let axisGlobal = new THREE.Vector3();
-      if (arm.joints[i].type === 'hinge') {
+      if (joint.type === 'hinge') {
         // Transform axis to global coordinates
         axisGlobal = axis.clone();
-        axisGlobal.applyMatrix4(arm.joints[i].matrixWorld);
+        axisGlobal.applyMatrix4(joint.matrixWorld);
         // Remove translation component of Matrix4
         axisGlobal.sub(jointPos);
         axisGlobal.normalize();
-      } else if (arm.joints[i].type === 'ball') {
+      } else if (joint.type === 'ball') {
         // i is never 0 since end effectors are always hinges
         let jointToChildJoint = arm.joints[i-1].getWorldPosition().clone();
-        jointToChildJoint.sub(arm.joints[i].getWorldPosition());
+        jointToChildJoint.sub(joint.getWorldPosition());
         let jointToGoal = arm.getTargetPosition().clone();
-        jointToGoal.sub(arm.joints[i].getWorldPosition());
+        jointToGoal.sub(joint.getWorldPosition());
 
         axisGlobal.crossVectors(jointToChildJoint, jointToGoal).normalize();
+        joint.axis = joint.worldToLocal(axisGlobal);
       }
 
       // Get direction

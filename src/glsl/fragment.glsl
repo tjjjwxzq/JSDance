@@ -7,5 +7,4 @@ varying vec4 debug;
 void main() {
   /* gl_FragColor = debug; */
   gl_FragColor = vec4(2.0 * vNormal, 1.0);
-  /* gl_FragColor = vec4(vec3(distFromCenter), 1.0); */
 }
