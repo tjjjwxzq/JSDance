@@ -79,7 +79,7 @@ export default {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(mtl|obj|json|png)$/,
+        test: /\.(mtl|obj|json|png|mp3|wav)$/,
         include: ASSET_PATH,
         exclude: OUTPUT_PATH,
         use: {

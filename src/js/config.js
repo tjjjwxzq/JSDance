@@ -90,4 +90,10 @@ export default {
         // 'hinge'],
     // },
   },
+  sound: {
+    // src: 'assets/xxangels.mp3',
+    src: 'assets/sample.wav',
+    fftSize: 32,
+    tickFreq: 20,
+  },
 };

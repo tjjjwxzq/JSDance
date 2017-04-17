@@ -1,4 +1,3 @@
-import {createjs} from 'imports-loader?this=>window!components/soundjs';
 import * as THREE from 'three';
 // ensure MTLLoader, OBJLoader, and OrbitControl
 // properties are added to THREE object
@@ -16,9 +15,11 @@ import Renderer from 'components/renderer';
 import Light from 'components/light';
 import ViewerGui from 'components/viewerGui';
 import Shader from 'components/shader';
+import Sound from 'components/sound';
 import Config from 'config';
 
 import humanJSON from 'human.json';
+import _sample from 'sample.wav';
 
 /**
  * ties components together into core threejs program
@@ -49,6 +50,9 @@ export default class Main {
 
     // Controls
     this.controls = new Controls(this.camera.threeCamera, this.renderer.threeRenderer.domElement);
+
+    // Sound
+    this.sound = new Sound();
 
     // Set ups model config
     this.modelName = Config.model.modelName;
