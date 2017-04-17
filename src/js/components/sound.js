@@ -20,6 +20,10 @@ export default class Sound {
     this.analyserNode.smoothingTimeConstant = 0;
     this.analyserNode.connect(context.destination);
 
+    let dynamicsNode = createjs.Sound.activePlugin.dynamicsCompressorNode;
+    dynamicsNode.disconnect();  // disconnect from destination
+    dynamicsNode.connect(this.analyserNode);
+
     // arrays for retrieving analyserNode data
     this.freqFloatData = new Float32Array(this.analyserNode.frequencyBinCount);
     this.freqByteData = new Uint8Array(this.analyserNode.frequencyBinCount);
@@ -39,7 +43,7 @@ export default class Sound {
     requestAnimationFrame(this.analyse.bind(this));
     this.analyserNode.getByteFrequencyData(this.freqByteData);
     this.analyserNode.getByteTimeDomainData(this.timeByteData);
-    console.log(this.freqByteData);
+    // console.log(this.freqByteData);
     console.log(this.timeByteData);
   }
 }
