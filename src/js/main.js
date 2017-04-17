@@ -92,8 +92,8 @@ export default class Main {
     this.updateIK();
     this.controls.threeControls.update();
 
-    // let pos = this.viewerGui.allIKControls.Human['head'];
-    // this.cube.position.set( pos.x, pos.y, pos.z );
+    let pos = this.viewerGui.allIKControls.Human['right hand'];
+    this.cube.position.set( pos.x, pos.y, pos.z );
 
     this.render();
   }
@@ -190,6 +190,11 @@ export default class Main {
               joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
+
+          if(armName == 'right hand') {
+            console.log(arm.joints[2].rotation);
+          }
+
         }
       }
     }
