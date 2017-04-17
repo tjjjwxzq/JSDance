@@ -53,8 +53,8 @@ varying vec4 debug;
   // of the vertex currently being rendered
   uniform mat4 bindMatrix;
   uniform mat4 bindMatrixInverse;
-  uniform vec4 rotQuaternions[21];
-  uniform vec4 transQuaternions[21];
+  uniform vec4 rotQuaternions[20];
+  uniform vec4 transQuaternions[20];
   vec4 getRotQuaternion(const in float i) {
     return rotQuaternions[int(i)];
   }
