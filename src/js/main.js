@@ -278,17 +278,6 @@ export default class Main {
       mesh.name = modelName;
 
       // Load arms
-<<<<<<< HEAD
-      let arms = [];
-      for (let armName in Config.arms) {
-        if (Config.arms.hasOwnProperty(armName)) {
-          let baseIdx = Config.arms[armName].base;
-          let endIdx = Config.arms[armName].end;
-          let axisArr = Config.arms[armName].axis;
-          let axis = new THREE.Vector3(...axisArr);
-
-          let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis);
-=======
       let arms = {};
       for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
@@ -301,7 +290,6 @@ export default class Main {
           let types = armConfig.types;
 
           let arm = new Arm(mesh.skeleton.bones[baseIdx], mesh.skeleton.bones[endIdx], axis, constraints, types);
->>>>>>> ik-in-progress-broken
 
           arms[armName] = arm;
         }
