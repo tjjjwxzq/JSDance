@@ -19,7 +19,6 @@ import Sound from 'components/sound';
 import Config from 'config';
 
 import humanJSON from 'human.json';
-import _sample from 'sample.wav';
 
 /**
  * ties components together into core threejs program
@@ -52,7 +51,7 @@ export default class Main {
     this.controls = new Controls(this.camera.threeCamera, this.renderer.threeRenderer.domElement);
 
     // Sound
-    this.sound = new Sound();
+    this.sound;
 
     // Set ups model config
     this.modelName = Config.model.modelName;
@@ -89,7 +88,7 @@ export default class Main {
     // the callback invoked should repeatedly invoke itself
     // need to bind to this object or `this` will be undefined
     requestAnimationFrame(this.animate.bind(this));
-    this.updateFK();
+    //this.updateFK();
     // updateUniforms has to be before updateIK for some reason
     if(this.skinningType === 'dual quaternion')
       this.updateUniforms();
@@ -167,10 +166,20 @@ export default class Main {
       let human = this.models[this.modelName];
       let arms = human.arms;
       let controls = this.viewerGui.allIKControls[this.modelName];
+      let sound = this.sound;
       // Update target positions
       for (let armName in arms) {
         if (arms.hasOwnProperty(armName)) {
-          let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
+          //let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
+          //console.log(controls[armName].x,controls[armName].y,controls[armName].z);
+          //KEITH ADDITION
+          //this works
+          //console.log(sound.righthandX, sound.righthandY, sound.righthandZ);
+          //let targetPosition = new THREE.Vector3(sound.righthandX/10, sound.righthandY/10, sound.righthandZ/10);
+          //let targetPosition = new THREE.Vector3(0.5,0.5,0.5);
+          let targetPosition = new THREE.Vector3(sound.armPositions[armName].x, sound.armPositions[armName].y, sound.armPositions[armName].z);
+
+
           let arm = arms[armName];
           arm.setTargetPosition(targetPosition);
 
@@ -304,6 +313,10 @@ export default class Main {
         }
       }
 
+      console.log("before");
+      this.sound = new Sound(arms);
+      console.log("AFTER");
+
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
       this.models[modelName] = {
@@ -326,6 +339,7 @@ export default class Main {
    *  @param {object} event : model-loaded event
    */
   onModelLoaded(event) {
+    console.log("model loaded)");
     let modelName = event.detail.modelName;
     if (this.viewerGui.controls['Active Model'] === modelName) {
       this.toggleModel(this.models[modelName], true, this.viewerGui.controls['Show Skeleton']);
