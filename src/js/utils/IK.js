@@ -30,12 +30,23 @@ export default class IK {
       let jointToEndEffector = endEffectorPos.clone();
       jointToEndEffector.sub(jointPos);
 
-      // Transform axis to global coordinates
-      let axisGlobal = axis.clone();
-      axisGlobal.applyMatrix4(arm.joints[i].matrixWorld);
-      // Remove translation component of Matrix4
-      axisGlobal.sub(jointPos);
-      axisGlobal.normalize();
+      let axisGlobal = new THREE.Vector3();
+      if (arm.joints[i].type === 'hinge') {
+        // Transform axis to global coordinates
+        axisGlobal = axis.clone();
+        axisGlobal.applyMatrix4(arm.joints[i].matrixWorld);
+        // Remove translation component of Matrix4
+        axisGlobal.sub(jointPos);
+        axisGlobal.normalize();
+      } else if (arm.joints[i].type === 'ball') {
+        // i is never 0 since end effectors are always hinges
+        let jointToChildJoint = arm.joints[i-1].getWorldPosition().clone();
+        jointToChildJoint.sub(arm.joints[i].getWorldPosition());
+        let jointToGoal = arm.getTargetPosition().clone();
+        jointToGoal.sub(arm.joints[i].getWorldPosition());
+
+        axisGlobal.crossVectors(jointToChildJoint, jointToGoal).normalize();
+      }
 
       // Get direction
       let direction = new THREE.Vector3();
