@@ -15,8 +15,16 @@ export default class Arm {
     this.joints = [];
     this.addJoints(base, end);
     for (let i = 0; i < this.joints.length; i++) {
-      let radConstraints = constraints[i].map((x) => x / 360 * 2 * Math.PI);
-      this.joints[i].constraints = radConstraints;
+      if (types[i] === 'hinge') {
+        let radConstraints = constraints[i].map((x) => x / 360 * 2 * Math.PI);
+        this.joints[i].constraints = radConstraints;
+      } else if (types[i] === 'ball') {
+        let radConstraints = {};
+        radConstraints.x = constraints[i].x.map((x) => x / 360 * 2 * Math.PI);
+        radConstraints.y = constraints[i].y.map((x) => x / 360 * 2 * Math.PI);
+        radConstraints.z = constraints[i].z.map((x) => x / 360 * 2 * Math.PI);
+        this.joints[i].constraints = radConstraints;
+      }
       this.joints[i].type = types[i];
       this.joints[i].axis = axis;
     }
