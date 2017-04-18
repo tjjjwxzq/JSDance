@@ -28,6 +28,7 @@ export default class Arm {
       this.joints[i].type = types[i];
       this.joints[i].axis = axis;
     }
+    this.prevError = this.getError();
   }
 
   /**

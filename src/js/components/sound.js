@@ -26,8 +26,8 @@ export default class Sound {
     let armPositions = {};
     let baseArmPositions = {};
 
-    for (let armName in Config.arms) {
-        if (Config.arms.hasOwnProperty(armName)) {
+    for (let armName in arms) {
+        if (arms.hasOwnProperty(armName)) {
             armPositions[armName] = {
                 x: arms[armName].targetPosition.x,
                 y: arms[armName].targetPosition.y,
@@ -77,15 +77,20 @@ export default class Sound {
     this.freqFloatData = new Float32Array(this.analyserNode.frequencyBinCount);
     this.freqByteData = new Uint8Array(this.analyserNode.frequencyBinCount);
     this.timeByteData = new Uint8Array(this.analyserNode.frequencyBinCount);
-
-    this.startPlayback();
   }
 
   startPlayback() {
-    if (this.soundInstance) return;
+    if (this.soundInstance) {
+      this.soundInstance.play({loop: -1});
+      return;
+    };
 
     this.soundInstance = createjs.Sound.play(src, {loop: -1});
     this.analyse();
+  }
+
+  stopPlayback() {
+    this.soundInstance.stop();
   }
 
   analyse() {
@@ -100,7 +105,7 @@ export default class Sound {
     //there are 12 IK parameters, so there should be 12 variables
 
     //let mapping = [1,2,3,4,5,6,7,8,9,10,11,12];
-    let mapping = [1,30,30,1,30,30,1,30,30,1,30,30];
+    let mapping = [1,15,15,1,15,15,1,15,15,1,15,15];
     //let mapping = [2,4,6,2,4,6,2,4,6,2,4,6];
     let n = 0;
 
@@ -110,6 +115,7 @@ export default class Sound {
     for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
+
             //console.log(this.freqByteData[mapping[n]]);
             armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128)/100;
             if (isNaN(armPositions[armName].x)) {armPositions[armName].x = baseArmPositions[armName].x}

@@ -69,7 +69,7 @@ export default class IK {
    * @return {array} angleUpdate: joints.length array of change in angles
    */
   static getAngleUpdate(jacobian, arm) {
-    let alpha = 0.001;
+    let alpha = 0.01;
     return numeric.dot(numeric.transpose(jacobian), arm.getError().toArray()).map((x) => x * alpha);
   }
 }

@@ -55,6 +55,7 @@ export default class Main {
 
     // Sound
     this.sound;
+    this.playSound = false;
 
     // Set ups model config
     this.modelName = Config.model.modelName;
@@ -69,22 +70,64 @@ export default class Main {
     // GUI
     this.viewerGui = new ViewerGui(Object.keys(this.models));
 
-    // Axes for debugging
-    let axes = buildAxes(1000);
-    this.scene.add(axes);
+    // Add debugging
+    this.addDebug();
 
     // Listen for model load and GUI events
     window.addEventListener('model-loaded', this.onModelLoaded.bind(this));
     window.addEventListener('on-change-model', this.onChangeModel.bind(this));
     window.addEventListener('on-toggle-skeleton', this.onToggleSkeleton.bind(this));
+    window.addEventListener('on-toggle-debug', this.onToggleDebug.bind(this));
+    window.addEventListener('on-toggle-sound', this.onToggleSound.bind(this));
     window.addEventListener('on-change-skinning-type', this.onChangeSkinningType.bind(this));
     window.addEventListener('on-change-kinematics-type', this.onChangeKinematicsType.bind(this));
 
-    this.cube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
-    this.scene.add(this.cube);
-
     // Start animation/render
     this.animate();
+  }
+
+  /**
+   * adds axes and target position trackers
+   */
+  addDebug() {
+    // add axes
+    this.axes = buildAxes(1000);
+    this.axes.visible = false;
+    this.scene.add(this.axes);
+
+    // add target position markers
+    this.targetMarkers = {};
+    for (let armName in Config.arms) {
+      if (Config.arms.hasOwnProperty(armName)) {
+        let marker = new THREE.Mesh( new THREE.SphereGeometry(0.5, 0.5, 0.5), new THREE.MeshNormalMaterial() );
+        marker.visible = false;
+        this.scene.add(marker);
+        this.targetMarkers[armName] = marker;
+      }
+    }
+
+    this.toggleDebug(this.viewerGui.controls['Show Debug']);
+  }
+
+  /**
+   * updates position of target markers according to GUI
+   */
+  updateMarkers() {
+    let controls = this.viewerGui.allIKControls;
+    if (controls !== undefined) {
+      controls = controls[this.modelName];
+      for (let armName in controls) {
+        if (controls.hasOwnProperty(armName)) {
+          let pos;
+          if (!this.playSound) {
+            pos = controls[armName];
+          } else {
+            pos = this.sound.armPositions[armName];
+          }
+          this.targetMarkers[armName].position.set(pos.x, pos.y, pos.z);
+        }
+      }
+    }
   }
 
   /**
@@ -99,14 +142,12 @@ export default class Main {
       this.updateFK();
     } else if (this.kinematicsType === 'inverse') {
       this.updateIK();
+      this.updateMarkers();
     }
     // updateUniforms has to be before updateIK for some reason
     if(this.skinningType === 'dual quaternion')
       this.updateUniforms();
     this.controls.threeControls.update();
-
-    let pos = this.viewerGui.allIKControls.Human['right foot'];
-    this.cube.position.set( pos.x, pos.y, pos.z );
 
     this.render();
   }
@@ -180,23 +221,21 @@ export default class Main {
       // Update target positions
       for (let armName in arms) {
         if (arms.hasOwnProperty(armName)) {
+          let targetPosition;
 
-          // Update from GUI controls
-          //let targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
-
-          //console.log(controls[armName].x,controls[armName].y,controls[armName].z);
-          //KEITH ADDITION
-          //this works
-          //console.log(sound.righthandX, sound.righthandY, sound.righthandZ);
-          //let targetPosition = new THREE.Vector3(sound.righthandX/10, sound.righthandY/10, sound.righthandZ/10);
-          //let targetPosition = new THREE.Vector3(0.5,0.5,0.5);
-          let targetPosition = new THREE.Vector3(sound.armPositions[armName].x, sound.armPositions[armName].y, sound.armPositions[armName].z);
+          if (!this.playSound) {
+            // Update from GUI controls
+            targetPosition = new THREE.Vector3(controls[armName].x, controls[armName].y, controls[armName].z);
+          } else {
+            targetPosition = new THREE.Vector3(sound.armPositions[armName].x, sound.armPositions[armName].y, sound.armPositions[armName].z);
+          }
 
           let arm = arms[armName];
           arm.setTargetPosition(targetPosition);
 
+
           // Solve for and set angles
-          for(let i=0; i < 1; ++i) {
+          for(let i=0; i < 10; ++i) {
             let angles = IK.solve(arm);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
@@ -223,7 +262,9 @@ export default class Main {
                 let minZ = joint.constraints.z[0];
                 let maxZ = joint.constraints.z[1];
 
-                if (joint.prevAngle !== undefined && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
+                let originalEuler = joint.rotation.clone();
+
+                if (joint.prevAngle !== undefined) {// && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
                   joint.rotateOnAxis(joint.axis, angles[i]);
 ;
                   let finalRotObject = new THREE.Object3D();
@@ -248,6 +289,17 @@ export default class Main {
                   }
 
                   joint.setRotationFromEuler(finalRotObject.rotation);
+
+                  if (arm.getError().length() > arm.prevError.length()) {
+                    joint.setRotationFromEuler(originalEuler);
+                  }
+
+                  if(armName == 'right hand') {
+                    // console.log('current ' + arm.getError().length());
+                    // console.log('prev ' + arm.prevError.length());
+                  }
+
+                  arm.prevError = arm.getError();
                 }
 
                 joint.prevAngle = angles[i];
@@ -255,7 +307,7 @@ export default class Main {
             }
           }
 
-          if(armName == 'left hand') {
+          if(armName == 'right hand') {
             // console.log('current update ' + IK.solve(arm)[2]);
             // console.log('prev update ' + arm.joints[2].prevAngle);
             // console.log(arm.joints[2].axis);
@@ -368,10 +420,6 @@ export default class Main {
         }
       }
 
-      console.log("before");
-      this.sound = new Sound(arms);
-      console.log("AFTER");
-
       this.scene.add(skeletonHelper);
       this.scene.add(mesh);
       this.models[modelName] = {
@@ -405,6 +453,9 @@ export default class Main {
     if (this.models[modelName].mesh !== undefined) {
       this.addGuiControls(modelName);
     }
+
+    // Initialize sound
+    this.sound = new Sound(this.models[modelName].arms);
   }
 
   /**
@@ -462,6 +513,38 @@ export default class Main {
     } else {
       model.skeleton.visible = skeleton;
       model.mesh.visible = toggle;
+    }
+  }
+
+  /**
+   * toggles visibility of axes and target markers
+   * on change in GUI value
+   */
+  onToggleDebug(event) {
+    let show = event.detail.show;
+    this.toggleDebug(show);
+  }
+
+  /**
+   * toggles visibility of axes and target markers
+   * @param {bool} toggle : toggle value
+   */
+  toggleDebug(toggle) {
+    this.axes.visible = toggle;
+    for (let armName in this.targetMarkers) {
+      if (this.targetMarkers.hasOwnProperty(armName)) {
+        this.targetMarkers[armName].visible = toggle;
+      }
+    }
+  }
+
+  onToggleSound(event) {
+    let play = event.detail.play;
+    this.playSound = play;
+    if (play) {
+      this.sound.startPlayback();
+    } else {
+      this.sound.stopPlayback();
     }
   }
 
