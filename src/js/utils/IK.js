@@ -13,7 +13,7 @@ export default class IK {
     let J = this.computeJacobian(arm);
     // if (arm.joints.length === 1)
     //   console.log(J);
-    return this.getAngleUpdate(J, arm);
+    return this.getAngleUpdateInverse(J, arm);
   }
 
   /**
@@ -71,5 +71,22 @@ export default class IK {
   static getAngleUpdate(jacobian, arm) {
     let alpha = 0.01;
     return numeric.dot(numeric.transpose(jacobian), arm.getError().toArray()).map((x) => x * alpha);
+  }
+
+  /**
+   * @param {array} jacobian: result from computeJacobian()
+   * @param {object} arm: Arm instance
+   * @return {array} angleUpdate: joints.length array of change in angles
+   */
+  static getAngleUpdateInverse(jacobian, arm) {
+    let alpha = 0.01,
+        lambda = 10;
+    let Jt = numeric.transpose(jacobian);
+    let JJt = numeric.dot(jacobian, Jt);
+    let JJTDamped = numeric.add(JJt, numeric.diag([lambda, lambda, lambda]));
+    let JJtInv = numeric.inv(JJTDamped);
+    let pseudoinverse = numeric.dot(Jt, JJTDamped);
+    
+    return numeric.dot(pseudoinverse, arm.getError().toArray()).map((x) => x * alpha);
   }
 }
