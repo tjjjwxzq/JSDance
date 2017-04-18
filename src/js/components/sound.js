@@ -134,7 +134,7 @@ export default class Sound {
             n = n+3;
         }
     }
-    console.log(armPositions['right hand'].x);
+    // console.log(armPositions['right hand'].x);
 
     // this.righthandX = this.timeByteData[0]
     // this.righthandY = this.timeByteData[1]
