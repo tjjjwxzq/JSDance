@@ -93,18 +93,11 @@ export default class Sound {
     this.soundInstance.stop();
   }
 
-  analyse() {
+  analyse(evt) {
     requestAnimationFrame(this.analyse.bind(this));
     this.analyserNode.getByteFrequencyData(this.freqByteData); //frequency
     this.analyserNode.getByteTimeDomainData(this.timeByteData); //waveform
-    // console.log(this.freqByteData);
-    //console.log(this.timeByteData);
 
-    //console.log(this.timeByteData[0], this.freqByteData[0]);
-
-    //there are 12 IK parameters, so there should be 12 variables
-
-    //let mapping = [1,2,3,4,5,6,7,8,9,10,11,12];
     //frequency to end position mapping
     ///changes for every "genre"
     //right hand, left hand, right leg, left leg
@@ -127,7 +120,7 @@ export default class Sound {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
 
-            console.log(this.freqByteData[mapping[n]]);
+            //console.log(this.freqByteData[mapping[n]]);
             armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]/255)*scaling[n];    //divide by 255 to normalize 
             if (isNaN(armPositions[armName].x)) {armPositions[armName].x = baseArmPositions[armName].x}
 
@@ -139,9 +132,7 @@ export default class Sound {
 
             //console.log(armPositions[armName].x);
             //console.log(armPositions[armName].x,armPositions[armName].y,armPositions[armName].z)
-            // armPositions[armName].x = baseArmPositions[armName].x ;
-            // armPositions[armName].y = baseArmPositions[armName].y ;
-            // armPositions[armName].z = baseArmPositions[armName].z ;
+
             n = n+3;
         }
     }
