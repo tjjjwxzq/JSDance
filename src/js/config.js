@@ -111,7 +111,7 @@ export default {
   },
   sound: {
     // src: 'assets/xxangels.wav',
-    src: 'assets/simplebeat.wav',
+    src: 'assets/sine.wav',
     fftSize: 32,
     tickFreq: 20,
   },
