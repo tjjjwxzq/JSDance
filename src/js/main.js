@@ -204,13 +204,14 @@ export default class Main {
             }
           }
 
-          if(armName == 'right hand') {
+          //if(armName == 'right hand') {
             // console.log(arm.joints[2].rotation);
-          }
+          //}
 
         }
       }
     }
+    human.skeleton.update();
   }
 
   /**
