@@ -58,7 +58,6 @@ export default class Main {
 
     // Sound
     this.sound;
-    this.srcs = Config.sound.srcs;
     this.src = Config.sound.srcs[0];
     this.playSound = false;
 
@@ -67,13 +66,16 @@ export default class Main {
     this.skinningType = Config.model.skinningType;
     this.kinematicsType = Config.model.kinematicsType;
 
+    // IK Method
+    this.ikMethod = Config.ikMethods[0];
+    
     // Load models
     this.models = {};
     this.models[this.modelName] = null;
     this.loadJSONModel(humanJSON, this.modelName, this.skinningType);
 
     // GUI
-    this.viewerGui = new ViewerGui(Object.keys(this.models), this.srcs);
+    this.viewerGui = new ViewerGui(Object.keys(this.models));
 
     // Add debugging
     this.addDebug();
@@ -87,6 +89,7 @@ export default class Main {
     window.addEventListener('on-change-song', this.onChangeSong.bind(this));
     window.addEventListener('on-change-skinning-type', this.onChangeSkinningType.bind(this));
     window.addEventListener('on-change-kinematics-type', this.onChangeKinematicsType.bind(this));
+    window.addEventListener('on-change-ik-method', this.onChangeIKMethod.bind(this));
 
     // Start animation/render
     this.animate();
@@ -244,7 +247,7 @@ export default class Main {
 
           // Solve for and set angles
           for(let i=0; i < 10; ++i) {
-            let angles = IK.solve(arm);
+            let angles = IK.solve(arm, this.ikMethod);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
 
@@ -299,8 +302,8 @@ export default class Main {
 
 
                 // if (arm.getError().length() > arm.prevError.length()) {
-                  // console.log("RESETTING");
-                  // joint.setRotationFromEuler(originalEuler);
+                // console.log("RESETTING");
+                // joint.setRotationFromEuler(originalEuler);
                 // }
 
                 if(armName == 'right foot' && i==2) {
@@ -566,6 +569,11 @@ export default class Main {
     this.sound.createInstance(this.src);
     if (this.playSound)
       this.sound.startPlayback();
+  }
+
+  onChangeIKMethod(event) {
+    let ikMethod = event.detail.ikMethod;
+    this.ikMethod = ikMethod;
   }
 
   /**

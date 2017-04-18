@@ -9,11 +9,12 @@ export default class IK {
    * @param {object} arm : Arm instance
    * @return {array} array of updates to joint angles
    */
-  static solve(arm) {
+  static solve(arm, ikMethod) {
     let J = this.computeJacobian(arm);
+    console.log(arm);
     // if (arm.joints.length === 1)
     //   console.log(J);
-    return this.getAngleUpdateInverse(J, arm);
+    return this.getAngleUpdate(J, arm, ikMethod);
   }
 
   /**
@@ -24,7 +25,7 @@ export default class IK {
   static computeJacobian(arm) {
     let J = [[], [], []]; // 3 x joints.length, first row is end
     let endEffectorPos = arm.getEndEffector().getWorldPosition();
-    for(let i = 0; i < arm.joints.length; i++) {
+    for (let i = 0; i < arm.joints.length; i++) {
       let joint = arm.joints[i];
       let jointPos = joint.getWorldPosition();
 
@@ -66,27 +67,28 @@ export default class IK {
   /**
    * @param {array} jacobian: result from computeJacobian()
    * @param {object} arm: Arm instance
+   * @param {string} ikMethod: 'transpose', 'pseudoinverse', or 'damped'
    * @return {array} angleUpdate: joints.length array of change in angles
    */
-  static getAngleUpdate(jacobian, arm) {
+  static getAngleUpdate(jacobian, arm, ikMethod) {
     let alpha = 0.01;
-    return numeric.dot(numeric.transpose(jacobian), arm.getError().toArray()).map((x) => x * alpha);
+    if (ikMethod === 'transpose') {
+      return numeric.dot(numeric.transpose(jacobian), arm.getError().toArray()).map((x) => x * alpha);
+    } else {
+      let Jt = numeric.transpose(jacobian);
+      var JJt = numeric.dot(jacobian, Jt);
+      var JJtInv;
+      if (ikMethod === 'pseudoinverse') {
+        JJtInv = numeric.inv(JJt);
+      } else if (ikMethod === 'damped') {
+        let lambda = 1;
+        let JJtDamped = numeric.add(JJt, numeric.diag([lambda, lambda, lambda]));
+        JJtInv = numeric.inv(JJtDamped); 
+      }
+      let pseudoinverse = numeric.dot(Jt, JJtInv);
+      
+      return numeric.dot(pseudoinverse, arm.getError().toArray()).map((x) => x * alpha);
+    } 
   }
 
-  /**
-   * @param {array} jacobian: result from computeJacobian()
-   * @param {object} arm: Arm instance
-   * @return {array} angleUpdate: joints.length array of change in angles
-   */
-  static getAngleUpdateInverse(jacobian, arm) {
-    let alpha = 0.01,
-        lambda = 10;
-    let Jt = numeric.transpose(jacobian);
-    let JJt = numeric.dot(jacobian, Jt);
-    let JJTDamped = numeric.add(JJt, numeric.diag([lambda, lambda, lambda]));
-    let JJtInv = numeric.inv(JJTDamped);
-    let pseudoinverse = numeric.dot(Jt, JJTDamped);
-    
-    return numeric.dot(pseudoinverse, arm.getError().toArray()).map((x) => x * alpha);
-  }
 }
