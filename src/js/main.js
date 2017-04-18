@@ -23,6 +23,7 @@ import _simpleBeat from 'simplebeat.wav';
 import _xxangels from 'xxangels.wav';
 import _sample from 'sample.wav';
 import _sine from 'sine.wav';
+import _goof from 'Goof.mp3';
 
 var TWEEN = require('tween.js');
 /**
@@ -57,6 +58,8 @@ export default class Main {
 
     // Sound
     this.sound;
+    this.srcs = Config.sound.srcs;
+    this.src = Config.sound.srcs[0];
     this.playSound = false;
 
     // Set ups model config
@@ -70,7 +73,7 @@ export default class Main {
     this.loadJSONModel(humanJSON, this.modelName, this.skinningType);
 
     // GUI
-    this.viewerGui = new ViewerGui(Object.keys(this.models));
+    this.viewerGui = new ViewerGui(Object.keys(this.models), this.srcs);
 
     // Add debugging
     this.addDebug();
@@ -81,6 +84,7 @@ export default class Main {
     window.addEventListener('on-toggle-skeleton', this.onToggleSkeleton.bind(this));
     window.addEventListener('on-toggle-debug', this.onToggleDebug.bind(this));
     window.addEventListener('on-toggle-sound', this.onToggleSound.bind(this));
+    window.addEventListener('on-change-song', this.onChangeSong.bind(this));
     window.addEventListener('on-change-skinning-type', this.onChangeSkinningType.bind(this));
     window.addEventListener('on-change-kinematics-type', this.onChangeKinematicsType.bind(this));
 
@@ -269,7 +273,7 @@ export default class Main {
                 let originalEuler = joint.rotation.clone();
 
                 joint.rotateOnAxis(joint.axis, angles[i]);
-;
+
                 let finalRotObject = new THREE.Object3D();
                 finalRotObject.setRotationFromEuler(joint.rotation);
 
@@ -546,11 +550,22 @@ export default class Main {
   onToggleSound(event) {
     let play = event.detail.play;
     this.playSound = play;
+    if (this.sound.soundInstace === undefined)
+      this.sound.createInstance(this.src);
     if (play) {
       this.sound.startPlayback();
     } else {
       this.sound.stopPlayback();
     }
+  }
+
+  onChangeSong(event) {
+    let songName = event.detail.songName;
+    this.src = songName;
+    this.sound.stopPlayback();
+    this.sound.createInstance(this.src);
+    if (this.playSound)
+      this.sound.startPlayback();
   }
 
   /**

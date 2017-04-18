@@ -110,9 +110,15 @@ export default {
     // },
   },
   sound: {
-    // src: 'assets/sine.wav',
-    src: 'assets/xxangels.wav',
+    assetPath: 'assets/',
+    srcs: [
+      'Goof.mp3',
+      'xxangels.wav',
+      'sample.wav',
+      'simplebeat.wav',
+      'sine.wav',
+    ],
     fftSize: 32,
-    tickFreq: 20,
+    sampleRate: 500,
   },
 };
