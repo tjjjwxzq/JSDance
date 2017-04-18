@@ -28,6 +28,9 @@ export default {
   model: {
     modelName: 'Human',
     skinningType: 'dual quaternion',
+    kinematicsType: 'inverse',
+    skinningTypes: ['dual quaternion', 'linear'],
+    kinematicsTypes: ['inverse', 'forward'],
   },
   /**
    * object containing all 5 end effectors
@@ -42,7 +45,11 @@ export default {
       'axis': [0, 1, 0],
       'constraints': [[-90, 90],
         [0, 140],
-        [-80, 130]],
+        {
+          x: [-50, 50],
+          y: [-80, 130],
+          z: [-70, 60],
+        }],
       'types': ['hinge',
         'hinge',
         'ball'],
@@ -52,7 +59,11 @@ export default {
       'axis': [0, 1, 0],
       'constraints': [[-90, 90],
         [0, 140],
-        [-80, 130]],
+        {
+          x: [-50, 50],
+          y: [-80, 130],
+          z: [-70, 60],
+        }],
       'types': ['hinge',
         'hinge',
         'ball'],
@@ -62,7 +73,11 @@ export default {
       'axis': [1, 0, 0],
       'constraints': [[-30, 90],
         [0, 140],
-        [-120, 60]],
+        {
+          x: [-120, 60],
+          y: [-60, 50],
+          z: [-70, 10],
+        }],
       'types': ['hinge',
         'hinge',
         'ball'],
@@ -72,7 +87,11 @@ export default {
       'axis': [1, 0, 0],
       'constraints': [[-30, 90],
         [0, 140],
-        [-120, 60]],
+        {
+          x: [-120, 60],
+          y: [-60, 50],
+          z: [-70, 10],
+        }],
       'types': ['hinge',
         'hinge',
         'ball'],

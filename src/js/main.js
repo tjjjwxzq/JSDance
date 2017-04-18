@@ -57,11 +57,12 @@ export default class Main {
     // Set ups model config
     this.modelName = Config.model.modelName;
     this.skinningType = Config.model.skinningType;
+    this.kinematicsType = Config.model.kinematicsType;
 
     // Load models
     this.models = {};
     this.models[this.modelName] = null;
-    this.loadJSONModel(humanJSON, 'Human', this.skinningType);
+    this.loadJSONModel(humanJSON, this.modelName, this.skinningType);
 
     // GUI
     this.viewerGui = new ViewerGui(Object.keys(this.models));
@@ -74,6 +75,8 @@ export default class Main {
     window.addEventListener('model-loaded', this.onModelLoaded.bind(this));
     window.addEventListener('on-change-model', this.onChangeModel.bind(this));
     window.addEventListener('on-toggle-skeleton', this.onToggleSkeleton.bind(this));
+    window.addEventListener('on-change-skinning-type', this.onChangeSkinningType.bind(this));
+    window.addEventListener('on-change-kinematics-type', this.onChangeKinematicsType.bind(this));
 
     this.cube = new THREE.Mesh( new THREE.BoxGeometry(1, 1, 1), new THREE.MeshNormalMaterial() );
     this.scene.add(this.cube);
@@ -89,14 +92,18 @@ export default class Main {
     // the callback invoked should repeatedly invoke itself
     // need to bind to this object or `this` will be undefined
     requestAnimationFrame(this.animate.bind(this));
-    this.updateFK();
+
+    if (this.kinematicsType === 'forward') {
+      this.updateFK();
+    } else if (this.kinematicsType === 'inverse') {
+      this.updateIK();
+    }
     // updateUniforms has to be before updateIK for some reason
     if(this.skinningType === 'dual quaternion')
       this.updateUniforms();
-    this.updateIK();
     this.controls.threeControls.update();
 
-    let pos = this.viewerGui.allIKControls.Human['right hand'];
+    let pos = this.viewerGui.allIKControls.Human['right foot'];
     this.cube.position.set( pos.x, pos.y, pos.z );
 
     this.render();
@@ -117,13 +124,13 @@ export default class Main {
     if (human !== null) {
       let bones = human.mesh.skeleton.bones;
       for (let bone of bones) {
-        bone.position.x = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} position`].x;
-        bone.position.y = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} position`].y;
-        bone.position.z = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} position`].z;
+        bone.position.x = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} position`].x;
+        bone.position.y = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} position`].y;
+        bone.position.z = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} position`].z;
 
-        bone.rotation.x = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} rotation`].x * (2 * Math.PI) / 360;
-        bone.rotation.y = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} rotation`].y * (2 * Math.PI) / 360;
-        bone.rotation.z = this.viewerGui.allModelControls[`${this.modelName} Controls`][`${bone.name} rotation`].z * (2 * Math.PI) / 360;
+        bone.rotation.x = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} rotation`].x * (2 * Math.PI) / 360;
+        bone.rotation.y = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} rotation`].y * (2 * Math.PI) / 360;
+        bone.rotation.z = this.viewerGui.allModelControls[`${this.modelName} FK Joint Controls`][`${bone.name} rotation`].z * (2 * Math.PI) / 360;
       }
 
       // update skeleton helper
@@ -179,23 +186,65 @@ export default class Main {
             let angles = IK.solve(arm);
             for (let i = 0; i < arm.joints.length; i++) {
               let joint = arm.joints[i];
-              let currentAngle = joint.rotation.toVector3().dot(joint.axis);
-              let newAngle = currentAngle + angles[i];
-              let angleUpdate = angles[i];
 
-              // Clamp angle of joint
-              let max = joint.constraints[1];
-              let min = joint.constraints[0];
-              if (newAngle > max) {
-                angleUpdate = max - currentAngle;
-              } else if (newAngle < min) {
-                angleUpdate = min - currentAngle;
+              if (joint.type == 'hinge') {
+                let min = joint.constraints[0];
+                let max = joint.constraints[1];
+                joint.rotateOnAxis(joint.axis, angles[i]);
+
+                let updatedAngle = joint.rotation.toVector3().dot(joint.axis);
+
+                if(updatedAngle > max) {
+                  joint.setRotationFromAxisAngle(joint.axis, max);
+                } else if (updatedAngle < min) {
+                  joint.setRotationFromAxisAngle(joint.axis, min);
+                }
+              } else if (joint.type == 'ball') {
+                let minX = joint.constraints.x[0];
+                let maxX = joint.constraints.x[1];
+
+                let minY = joint.constraints.y[0];
+                let maxY = joint.constraints.y[1];
+
+                let minZ = joint.constraints.z[0];
+                let maxZ = joint.constraints.z[1];
+
+                if (joint.prevAngle !== undefined && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
+                  joint.rotateOnAxis(joint.axis, angles[i]);
+;
+                  let finalRotObject = new THREE.Object3D();
+                  finalRotObject.setRotationFromEuler(joint.rotation);
+
+                  if (joint.rotation.x > maxX) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxX);
+                  } else if (joint.rotation.x < minX) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minX);
+                  }
+
+                  if (joint.rotation.y > maxY) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxY);
+                  } else if (joint.rotation.y < minY) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minY);
+                  }
+
+                  if (joint.rotation.z > maxZ) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxZ);
+                  } else if (joint.rotation.z < minZ) {
+                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minZ);
+                  }
+
+                  joint.setRotationFromEuler(finalRotObject.rotation);
+                }
+
+                joint.prevAngle = angles[i];
               }
-              joint.rotateOnAxis(joint.axis, angleUpdate);
             }
           }
 
-          if(armName == 'right hand') {
+          if(armName == 'left hand') {
+            // console.log('current update ' + IK.solve(arm)[2]);
+            // console.log('prev update ' + arm.joints[2].prevAngle);
+            // console.log(arm.joints[2].axis);
             // console.log(arm.joints[2].rotation);
           }
 
@@ -327,15 +376,34 @@ export default class Main {
    */
   onModelLoaded(event) {
     let modelName = event.detail.modelName;
+    // Unhide model
     if (this.viewerGui.controls['Active Model'] === modelName) {
       this.toggleModel(this.models[modelName], true, this.viewerGui.controls['Show Skeleton']);
     }
+
+    // Add GUI Controls
     if (this.models[modelName].mesh !== undefined) {
-      console.log(this.models[modelName].mesh.skeleton.bones);
-      this.viewerGui.addAllModelControls(
+      this.addGuiControls(modelName);
+    }
+  }
+
+  /**
+   * @param {string} modelName : name of model
+   * adds GUI controls for FK and IK
+   */
+  addGuiControls(modelName) {
+    let fkFolderName = `${modelName} FK Joint Controls`;
+    let ikFolderName = `${modelName} IK Target Controls`;
+    if(this.viewerGui.gui.__folders[fkFolderName] === undefined) {
+        this.viewerGui.addAllModelControls(
         SkinnedMeshControls.parseMesh(this.models[modelName].mesh), SkinnedMeshControls.parseMesh(this.models[modelName].mesh));
+    }
+
+    if (this.viewerGui.gui.__folders[ikFolderName] === undefined) {
       this.viewerGui.addIKControls(modelName, this.models[modelName].arms);
     }
+
+    this.toggleKinematicsControls();
   }
 
   /**
@@ -374,6 +442,55 @@ export default class Main {
     } else {
       model.skeleton.visible = skeleton;
       model.mesh.visible = toggle;
+    }
+  }
+
+  /**
+   * changes skinning type and reloads mesh
+   * @param {object} event : on-change-skinning-type event
+   */
+  onChangeSkinningType(event) {
+    let type = event.detail.type;
+    this.skinningType = type;
+    this.disposeMesh(this.models[this.modelName]);
+    this.models[this.modelName] = null;
+    this.loadJSONModel(humanJSON, this.modelName, this.skinningType);
+  }
+
+  /**
+   * disposes of model mesh and skeleton
+   * @param {object} model : model to dispose of
+   */
+  disposeMesh(model) {
+    this.scene.remove(model.mesh);
+    this.scene.remove(model.skeleton);
+    model.mesh.geometry.dispose();
+    model.mesh.material.dispose();
+    model.skeleton.geometry.dispose();
+    model.skeleton.material.dispose();
+  }
+
+  /**
+   * changes kinematics type and updates gui
+   * @param {object} event : on-change-kinematics-type event
+   */
+  onChangeKinematicsType(event) {
+    let type = event.detail.type;
+    this.kinematicsType = type;
+    this.toggleKinematicsControls();
+  }
+
+  /**
+   * toggles visibility of kinematics controls based on
+   * current kinematicsType
+   */
+  toggleKinematicsControls() {
+    if (this.kinematicsType === 'forward') {
+      this.viewerGui.gui.__folders[`${this.modelName} IK Target Controls`].domElement.style.display = 'none';
+      this.viewerGui.gui.__folders[`${this.modelName} FK Joint Controls`].domElement.style.display = 'block';
+    } else if (this.kinematicsType === 'inverse') {
+      this.viewerGui.gui.__folders[`${this.modelName} IK Target Controls`].domElement.style.display = 'block';
+      this.viewerGui.gui.__folders[`${this.modelName} FK Joint Controls`].domElement.style.display = 'none';
     }
   }
 }

@@ -1,4 +1,5 @@
 import dat from 'dat.gui';
+import Config from 'config';
 
 /**
  * class for initializing GUI controls
@@ -12,6 +13,8 @@ export default class ViewerGui {
     this.controls = {
       'Active Model': models[0],
       'Show Skeleton': false,
+      'Skinning Type': Config.model.skinningType,
+      'Kinematics Type': Config.model.kinematicsType,
     };
     this.extras = {
       'Previous Active Model': models[0],
@@ -19,6 +22,8 @@ export default class ViewerGui {
     this.gui = new dat.GUI();
     this.gui.add(this.controls, 'Active Model', models).onChange(this.onChangeModel.bind(this));
     this.gui.add(this.controls, 'Show Skeleton').onChange(this.onToggleShowSkeleton.bind(this));
+    this.gui.add(this.controls, 'Skinning Type', Config.model.skinningTypes).onChange(this.onChangeSkinningType.bind(this));
+    this.gui.add(this.controls, 'Kinematics Type', Config.model.kinematicsTypes).onChange(this.onChangeKinematicsType.bind(this));
   }
 
   /**
@@ -114,5 +119,31 @@ export default class ViewerGui {
       },
     };
     window.dispatchEvent(new CustomEvent('on-toggle-skeleton', data));
+  }
+
+  /**
+   * callback invoked when skinning type is changed
+   * dispatches an event with the control value
+   */
+  onChangeSkinningType() {
+    let data = {
+      detail: {
+        type: this.controls['Skinning Type'],
+      },
+    };
+    window.dispatchEvent(new CustomEvent('on-change-skinning-type', data));
+  }
+
+  /**
+   * callback invoked when kinematics type is changed
+   * dispatches an event with the control value
+   */
+  onChangeKinematicsType() {
+    let data = {
+      detail: {
+        type: this.controls['Kinematics Type'],
+      },
+    };
+    window.dispatchEvent(new CustomEvent('on-change-kinematics-type', data));
   }
 }

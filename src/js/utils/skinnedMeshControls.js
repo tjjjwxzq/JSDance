@@ -10,8 +10,8 @@ export default class SkinnedMeshControls {
    */
   static parseMesh(mesh) {
     let controls = {};
-    controls[`${mesh.name} Controls`] = {};
-    let subControls = controls[`${mesh.name} Controls`];
+    controls[`${mesh.name} FK Joint Controls`] = {};
+    let subControls = controls[`${mesh.name} FK Joint Controls`];
     for (let bone of mesh.skeleton.bones) {
       subControls[`${bone.name} position`] = {
         x: bone.position.x,

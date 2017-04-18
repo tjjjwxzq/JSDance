@@ -43,7 +43,5 @@ export default class Sound {
     requestAnimationFrame(this.analyse.bind(this));
     this.analyserNode.getByteFrequencyData(this.freqByteData);
     this.analyserNode.getByteTimeDomainData(this.timeByteData);
-    // console.log(this.freqByteData);
-    console.log(this.timeByteData);
   }
 }
