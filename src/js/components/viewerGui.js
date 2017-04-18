@@ -8,13 +8,15 @@ export default class ViewerGui {
   /**
    * constructor
    * @param {Array.<String>} models: array of model names
+   * @param {Array.<String>} songs: array of song names
    */
-  constructor(models) {
+  constructor(models, songs) {
     this.controls = {
       'Active Model': models[0],
       'Show Skeleton': false,
       'Show Debug': true,
       'Play Sound': false,
+      'Song Selection': songs[0],
       'Skinning Type': Config.model.skinningType,
       'Kinematics Type': Config.model.kinematicsType,
     };
@@ -26,6 +28,7 @@ export default class ViewerGui {
     this.gui.add(this.controls, 'Show Skeleton').onChange(this.onToggleShowSkeleton.bind(this));
     this.gui.add(this.controls, 'Show Debug').onChange(this.onToggleShowDebug.bind(this));
     this.gui.add(this.controls, 'Play Sound').onChange(this.onTogglePlaySound.bind(this));
+    this.gui.add(this.controls, 'Song Selection', songs).onChange(this.onChangeSong.bind(this));
     this.gui.add(this.controls, 'Skinning Type', Config.model.skinningTypes).onChange(this.onChangeSkinningType.bind(this));
     this.gui.add(this.controls, 'Kinematics Type', Config.model.kinematicsTypes).onChange(this.onChangeKinematicsType.bind(this));
   }
@@ -175,5 +178,14 @@ export default class ViewerGui {
       },
     };
     window.dispatchEvent(new CustomEvent('on-toggle-sound', data));
+  }
+
+  onChangeSong() {
+    let data = {
+      detail: {
+        songName: this.controls['Song Selection'],
+      }
+    };
+    window.dispatchEvent(new CustomEvent('on-change-song', data));
   }
 }
