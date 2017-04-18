@@ -110,8 +110,8 @@ export default {
     // },
   },
   sound: {
-    // src: 'assets/xxangels.mp3',
-    src: 'assets/sample.wav',
+    // src: 'assets/xxangels.wav',
+    src: 'assets/simplebeat.wav',
     fftSize: 32,
     tickFreq: 20,
   },
