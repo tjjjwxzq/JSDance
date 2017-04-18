@@ -110,16 +110,181 @@ export default {
     // },
   },
   sound: {
+
     assetPath: 'assets/',
     srcs: [
       'Goof.mp3',
       'xxangels.wav',
       'sample.wav',
+      'simon.mp3',
+      'ss.wav',
       'simplebeat.wav',
       'sine.wav',
     ],
+
+    sampleRate: [
+      521,  //goof
+      500,  //xxangels
+      1000, //sample
+      448,  //simon
+      120,  //ss.wav
+      1000, //simplebeat.wav
+      500,  //sine.wav
+    ],
+
+    map: [
+      [1,15,1,    //goof
+      1,15,1,
+      5,15,15,
+      5,15,15],
+
+      [1,15,1,
+      1,15,1,
+      5,15,15,
+      5,15,15],
+
+      [1,15,1,
+      1,15,1,
+      5,15,15,
+      5,15,15],
+
+      [1,12,30,  //simon
+      1,12,30,
+      5,15,12,
+      5,15,12],
+
+      [15,15,15, //ss
+      2,2,2,
+      15,15,15,
+      10,10,10],
+
+      [1,15,1,
+      1,15,1,
+      5,15,15,
+      5,15,15],
+
+      [1,15,1,
+      1,15,1,
+      5,15,15,
+      5,15,15],
+    ],
+    scaling: [
+      [10,  4,  1.5,   //right hand: x,y,z goof
+      -10,  4,  1.5,    //left hand: x,y,z
+      -0,    3,  1,    //right leg: x,y,z
+      0,     3,  1],    //left leg: x,y,z
+
+      [1.5,  3,  2.5,   //right hand: x,y,z
+      -1.5,  3,  2.5,    //left hand: x,y,z
+      -2,    3,  2,    //right leg: x,y,z
+      2,     3,  2],    //left leg: x,y,z
+
+      [1.5,  3,  2.5,   //right hand: x,y,z
+      -1.5,  3,  2.5,    //left hand: x,y,z
+      -2,    3,  2,    //right leg: x,y,z
+      2,     3,  2],    //left leg: x,y,z
+
+      [1,  -5,  2,   //right hand: x,y,z simon
+      1,  5,  2,    //left hand: x,y,z
+      0,    5,  -2,    //right leg: x,y,z
+      0,     5,  -2],    //left leg: x,y,z
+
+      [1,  10,  10,   //right hand: x,y,z SS
+      1,  10,  10,    //left hand: x,y,z
+      -0.5,    5,  -12,    //right leg: x,y,z
+      0.5,     5,  -12],    //left leg: x,y,z
+
+      [1.5,  3,  2.5,   //right hand: x,y,z
+      -1.5,  3,  2.5,    //left hand: x,y,z
+      -2,    3,  2,    //right leg: x,y,z
+      2,     3,  2],    //left leg: x,y,z
+
+      [1.5,  3,  2.5,   //right hand: x,y,z
+      -1.5,  3,  2.5,    //left hand: x,y,z
+      -2,    3,  2,    //right leg: x,y,z
+      2,     3,  2],    //left leg: x,y,z
+
+    ],
+
+    add: [
+      [0,0,0,        
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [0,0,0,        
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [0,0,0,        
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [0,0,0,       //simon 
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [1,-6,-5,        //SS
+      -1,-6,-5,
+      0,-3,5,
+      0,-3,5],
+
+      [0,0,0,        
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [0,0,0,        
+      0,0,0,
+      0,0,0,
+      0,0,0],
+    ],
+
+
+    randScale: [
+      [0,0,0,        //scales the random addition. cannot be too big
+      0,0,0,
+      0,1,1,
+      0,1,1],
+
+      [0.5,0.5,0.5,        //scales the random addition. cannot be too big
+      0.5,0.5,0.5,
+      1,1,1,
+      1,1,1],
+
+      [0.5,0.5,0.5,        //scales the random addition. cannot be too big
+      0.5,0.5,0.5,
+      1,1,1,
+      1,1,1],
+
+      [0.5,0.5,0.5,        //simon
+      0.5,0.5,0.5,
+      1,1,0,
+      1,1,0],
+
+      [0,0,0,        //SS
+      0,0,0,
+      0,0,0,
+      0,0,0],
+
+      [0.5,0.5,0.5,        //scales the random addition. cannot be too big
+      0.5,0.5,0.5,
+      1,1,1,
+      1,1,1],
+
+      [0.5,0.5,0.5,        //scales the random addition. cannot be too big
+      0.5,0.5,0.5,
+      1,1,1,
+      1,1,1],
+    ],
+
+    posNegSwitch: [true, true, true, true, false, true, true],
+
     fftSize: 32,
-    sampleRate: 500,
+    //sampleRate: 500,
   },
   ikMethods: ['transpose',
               'damped']

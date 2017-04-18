@@ -7,9 +7,15 @@ let assetPath = Config.sound.assetPath;
 let srcs = Config.sound.srcs;
 let fftSize = Config.sound.fftSize;
 let sampleRate = Config.sound.sampleRate;
+let map = Config.sound.map;
+let scaling = Config.sound.scaling;
+let randScale = Config.sound.randScale;
+let add = Config.sound.add;
+let posNegSwitch = Config.sound.posNegSwitch;
 
 export default class Sound {
   constructor(arms) {
+    this.i = 0;
     // Create object of position objects for each arm
     let armPositions = {};
     let baseArmPositions = {};
@@ -73,8 +79,12 @@ export default class Sound {
 
   startPlayback() {
     if (this.soundInstance) {
+      let i = srcs.findIndex(el => "assets/" + el === this.soundInstance.src);
+      console.log(i);
+      console.log(sampleRate[i]);
       this.soundInstance.play({loop: -1});
-      setInterval(this.analyse.bind(this), sampleRate);
+      setInterval(this.analyse.bind(this), sampleRate[i]);
+      this.i = i;
     };
 
   }
@@ -85,9 +95,10 @@ export default class Sound {
   }
 
   analyse() {
-    // console.log('analyse');
     this.analyserNode.getByteFrequencyData(this.freqByteData); //frequency
     this.analyserNode.getByteTimeDomainData(this.timeByteData); //waveform
+
+    //let i = srcs.findIndex(el => "assets/" + el === this.soundInstance.src); //gets index of map, scale, randScale
 
     //frequency to end position mapping
     ///changes for every "genre"
@@ -97,26 +108,31 @@ export default class Sound {
     //                 1,15,15,
     //                 1,15,15];
 
-    let mapping = [1,15,1,
-      1,15,1,
-      5,15,15,
-      5,15,15];
+    // let mapping = [1,15,1,
+    //                 1,15,1,
+    //                 5,15,15,
+    //                 5,15,15];
+    // let mapping2 = [1,3,20,
+    //                 1,3,20,
+    //                 5,3,15,
+    //                 5,3,15];
 
-    // let mapping = [2,20,30,
-      // 2,10,20,
-      // 1,13,31,
-      // 5,20,31];
-
-    // let mapping = [2,2,2,
-      // 20,20,20,
-      // 15,15,15,
-      // 15,15,15];
+    //let mapping = [];
+    //mapping.push(mapping1);
+    //mapping.push(mapping2);
 
     ///change to suit your needs
-    let scaling =   [1.7,  3,  2.5,   //right hand: x,y,z
-      -1.7,  3,  2.5,    //left hand: x,y,z
-      -1,    8,  2,    //right leg: x,y,z
-      1,     8,  2]    //left leg: x,y,z
+    // let scaling =   [1.5,  3,  2.5,   //right hand: x,y,z
+    //                 -1.5,  3,  2.5,    //left hand: x,y,z
+    //                 -2,    3,  2,    //right leg: x,y,z
+    //                 2,     3,  2];    //left leg: x,y,z
+
+
+    // let randScale = [0.5,0.5,0.5,        //scales the random addition. cannot be too big
+    //                 0.5,0.5,0.5,
+    //                 1,1,1,
+    //                 1,1,1];
+
     let n = 0;
 
     let internalArmPositions = this.internalArmPositions;
@@ -133,23 +149,47 @@ export default class Sound {
         // internalArmPositions[armName].z = baseArmPositions[armName].z + (Math.random() * 2 - 1.0) * 2;
         /******************************/
 
-        //console.log(this.freqByteData[mapping[n]]);
+            //console.log(this.freqByteData[mapping[n]]);
+            let posNeg = 1;
+            if (posNegSwitch[i] == true) {
+                posNeg = Math.random() < 0.5 ? -1 : 1;
+            }
 
-        internalArmPositions[armName].x = baseArmPositions[armName].x + (this.timeByteData[mapping[n]]/255)*scaling[n];    //divide by 255 to normalize
-        if (isNaN(internalArmPositions[armName].x)) {internalArmPositions[armName].x = baseArmPositions[armName].x}
+            let i = this.i;
 
-        internalArmPositions[armName].y = baseArmPositions[armName].y + (this.timeByteData[mapping[n+1]]/255)*scaling[n+1];
-        if (isNaN(internalArmPositions[armName].y)) {internalArmPositions[armName].y = baseArmPositions[armName].y}
+            //console.log(i);
 
-        internalArmPositions[armName].z = baseArmPositions[armName].z + (this.timeByteData[mapping[n+2]]/255)*scaling[n+2];
-        if (isNaN(internalArmPositions[armName].z)) {internalArmPositions[armName].z = baseArmPositions[armName].z};
+            console.log(this.timeByteData[map[i][n]]);
+            
+            internalArmPositions[armName].x = baseArmPositions[armName].x 
+                                        + posNeg * (this.timeByteData[map[i][n]]/255)*scaling[i][n]                                    //divide by 255 to normalize
+                                        + add[i][n]
+                                        + ((Math.random()-0.5) * randScale[i][n] * (this.freqByteData[map[i][n]]/255));       //random * scaling * zero randomness if silence
+            
 
-        //console.log(armPositions[armName].x);
-        //console.log(armPositions[armName].x,armPositions[armName].y,armPositions[armName].z)
+            internalArmPositions[armName].y = baseArmPositions[armName].y 
+                                        + posNeg * (this.timeByteData[map[i][n+1]]/255)*scaling[i][n+1] 
+                                        + add[i][n+1]
+                                        + ((Math.random()-0.5) * randScale[i][n+1] * (this.timeByteData[map[i][n+1]]/255));
+            
 
+            internalArmPositions[armName].z = baseArmPositions[armName].z 
+                                        + posNeg * (this.timeByteData[map[i][n+2]]/255)*scaling[i][n+2] 
+                                        + add[i][n+2]
+                                        + ((Math.random()-0.5) * randScale[i][n+2]* (this.freqByteData[map[i][n+2]]/255)); 
+
+            if (isNaN(internalArmPositions[armName].y)) {internalArmPositions[armName].y = baseArmPositions[armName].y+ add[i][n]}
+            if (isNaN(internalArmPositions[armName].x)) {internalArmPositions[armName].x = baseArmPositions[armName].x+ add[i][n+1]}
+            if (isNaN(internalArmPositions[armName].z)) {internalArmPositions[armName].z = baseArmPositions[armName].z+ add[i][n+2]};
+            
+
+        // internalArmPositions[armName].z = baseArmPositions[armName].z + (this.timeByteData[mapping[n+2]]/255)*scaling[n+2];
+        // if (isNaN(internalArmPositions[armName].z)) {internalArmPositions[armName].z = baseArmPositions[armName].z};
+
+        //let i = srcs.findIndex(el => "assets/" + el === this.soundInstance.src);
         new TWEEN.Tween(this.armPositions[armName])
         // .to({ internalArmPositions }, 3000)
-          .to({ x: internalArmPositions[armName].x, y: internalArmPositions[armName].y, z: internalArmPositions[armName].z }, sampleRate)
+          .to({ x: internalArmPositions[armName].x, y: internalArmPositions[armName].y, z: internalArmPositions[armName].z }, sampleRate[i])
           .start();
 
         n = n+3;
