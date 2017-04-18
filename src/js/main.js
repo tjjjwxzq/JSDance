@@ -23,6 +23,7 @@ import _simpleBeat from 'simplebeat.wav';
 import _xxangels from 'xxangels.wav';
 import _sample from 'sample.wav';
 
+var TWEEN = require('tween.js');
 /**
  * ties components together into core threejs program
  */
@@ -149,6 +150,8 @@ export default class Main {
       this.updateUniforms();
     this.controls.threeControls.update();
 
+    TWEEN.update();
+    
     this.render();
   }
 
@@ -266,7 +269,7 @@ export default class Main {
 
                 if (joint.prevAngle !== undefined) {// && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
                   joint.rotateOnAxis(joint.axis, angles[i]);
-;
+                  ;
                   let finalRotObject = new THREE.Object3D();
                   finalRotObject.setRotationFromEuler(joint.rotation);
 
@@ -466,7 +469,7 @@ export default class Main {
     let fkFolderName = `${modelName} FK Joint Controls`;
     let ikFolderName = `${modelName} IK Target Controls`;
     if(this.viewerGui.gui.__folders[fkFolderName] === undefined) {
-        this.viewerGui.addAllModelControls(
+      this.viewerGui.addAllModelControls(
         SkinnedMeshControls.parseMesh(this.models[modelName].mesh), SkinnedMeshControls.parseMesh(this.models[modelName].mesh));
     }
 
