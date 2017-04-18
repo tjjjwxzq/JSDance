@@ -152,7 +152,7 @@ export default class Main {
     this.controls.threeControls.update();
 
     TWEEN.update();
-    
+
     this.render();
   }
 
@@ -268,44 +268,6 @@ export default class Main {
 
                 let originalEuler = joint.rotation.clone();
 
-<<<<<<< HEAD
-                if (joint.prevAngle !== undefined) {// && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
-                  joint.rotateOnAxis(joint.axis, angles[i]);
-                  ;
-                  let finalRotObject = new THREE.Object3D();
-                  finalRotObject.setRotationFromEuler(joint.rotation);
-
-                  if (joint.rotation.x > maxX) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxX);
-                  } else if (joint.rotation.x < minX) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minX);
-                  }
-
-                  if (joint.rotation.y > maxY) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxY);
-                  } else if (joint.rotation.y < minY) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minY);
-                  }
-
-                  if (joint.rotation.z > maxZ) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), maxZ);
-                  } else if (joint.rotation.z < minZ) {
-                    finalRotObject.setRotationFromAxisAngle(new THREE.Vector3(1, 0, 0), minZ);
-                  }
-
-                  joint.setRotationFromEuler(finalRotObject.rotation);
-
-                  if (arm.getError().length() > arm.prevError.length()) {
-                    joint.setRotationFromEuler(originalEuler);
-                  }
-
-                  if(armName == 'right hand') {
-                    // console.log('current ' + arm.getError().length());
-                    // console.log('prev ' + arm.prevError.length());
-                  }
-
-                  arm.prevError = arm.getError();
-=======
                 joint.rotateOnAxis(joint.axis, angles[i]);
 ;
                 let finalRotObject = new THREE.Object3D();
@@ -345,9 +307,7 @@ export default class Main {
                   // console.log(finalRotObject.rotation);
                   // console.log('current ' + arm.getError().length());
                   // console.log('prev ' + arm.prevError.length());
->>>>>>> dc32d3476e29e4ca04dc04e1156848a02b9283c6
                 }
-
               }
             }
           }
@@ -488,7 +448,6 @@ export default class Main {
    *  @param {object} event : model-loaded event
    */
   onModelLoaded(event) {
-    console.log("model loaded)");
     let modelName = event.detail.modelName;
     // Unhide model
     if (this.viewerGui.controls['Active Model'] === modelName) {

@@ -68,7 +68,7 @@ export default class Sound {
     };
 
     this.soundInstance = createjs.Sound.play(src, {loop: -1});
-    console.log("tweening");
+    console.log('tweening');
     setInterval(this.analyse.bind(this), 3000);
   }
 
@@ -77,7 +77,7 @@ export default class Sound {
   }
 
   analyse() {
-    console.log("analyse");
+    console.log('analyse');
     this.analyserNode.getByteFrequencyData(this.freqByteData); //frequency
     this.analyserNode.getByteTimeDomainData(this.timeByteData); //waveform
     // console.log(this.freqByteData);
@@ -110,24 +110,24 @@ export default class Sound {
       if (Config.arms.hasOwnProperty(armName)) {
 
         /********** Using random number **********/
-        internalArmPositions[armName].x = baseArmPositions[armName].x + (Math.random() * 2 - 1.0) * 2;
-        internalArmPositions[armName].y = baseArmPositions[armName].y + (Math.random() * 2 - 1.0) * 2;
-        internalArmPositions[armName].z = baseArmPositions[armName].z + (Math.random() * 2 - 1.0) * 2;
+        // internalArmPositions[armName].x = baseArmPositions[armName].x + (Math.random() * 2 - 1.0) * 2;
+        // internalArmPositions[armName].y = baseArmPositions[armName].y + (Math.random() * 2 - 1.0) * 2;
+        // internalArmPositions[armName].z = baseArmPositions[armName].z + (Math.random() * 2 - 1.0) * 2;
         /******************************/
 
         /*************** Using frequencies -- problem is the variation is poor ***************/
-        // let rand = (Math.random() * 2 - 1.0); // [-3, 3]
-        // internalArmPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128/10 + rand);
-        // if (isNaN(internalArmPositions[armName].x)) {internalArmPositions[armName].x = baseArmPositions[armName].x}
+        let rand = (Math.random() * 2 - 1.0); // [-3, 3]
+        internalArmPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128/10 + rand);
+        if (isNaN(internalArmPositions[armName].x)) {internalArmPositions[armName].x = baseArmPositions[armName].x}
 
-        // internalArmPositions[armName].y = baseArmPositions[armName].y + (this.freqByteData[mapping[n+1]]-128)/10 + rand;
-        // if (isNaN(internalArmPositions[armName].y)) {internalArmPositions[armName].y = baseArmPositions[armName].y}
+        internalArmPositions[armName].y = baseArmPositions[armName].y + (this.freqByteData[mapping[n+1]]-128)/10 + rand;
+        if (isNaN(internalArmPositions[armName].y)) {internalArmPositions[armName].y = baseArmPositions[armName].y}
 
-        // internalArmPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]-128)/10 + rand;
-        // if (isNaN(internalArmPositions[armName].z)) {internalArmPositions[armName].z = baseArmPositions[armName].z};
-        // console.log(internalArmPositions[armName])
+        internalArmPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]-128)/10 + rand;
+        if (isNaN(internalArmPositions[armName].z)) {internalArmPositions[armName].z = baseArmPositions[armName].z};
+        console.log(internalArmPositions[armName])
         /********************************************/
-        
+
         new TWEEN.Tween(this.armPositions[armName])
 		    // .to({ internalArmPositions }, 3000)
 		      .to({ x: internalArmPositions[armName].x, y: internalArmPositions[armName].y, z: internalArmPositions[armName].z }, 3000)

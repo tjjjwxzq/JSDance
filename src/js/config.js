@@ -110,13 +110,8 @@ export default {
     // },
   },
   sound: {
-    src: 'assets/xxangels.wav',
     // src: 'assets/sine.wav',
-    // src: 'assets/xxangels.wav',
-<<<<<<< HEAD
     src: 'assets/xxangels.wav',
-=======
->>>>>>> dc32d3476e29e4ca04dc04e1156848a02b9283c6
     fftSize: 32,
     tickFreq: 20,
   },
