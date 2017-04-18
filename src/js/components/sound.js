@@ -24,15 +24,14 @@ export default class Sound {
   constructor(arms) {
     // Create object of position objects for each arm
     let armPositions = {};
-    let baseArmPositions = {};
 
-    for (let armName in Config.arms) {
-        if (Config.arms.hasOwnProperty(armName)) {
+    for (let armName in arms) {
+        if (arms.hasOwnProperty(armName)) {
             armPositions[armName] = {
                 x: arms[armName].targetPosition.x,
                 y: arms[armName].targetPosition.y,
-                z: arms[armName].targetPosition.z
-            }
+                z: arms[armName].targetPosition.z,
+            };
         }
     }
     this.baseArmPositions = armPositions;
@@ -72,15 +71,20 @@ export default class Sound {
     this.freqFloatData = new Float32Array(this.analyserNode.frequencyBinCount);
     this.freqByteData = new Uint8Array(this.analyserNode.frequencyBinCount);
     this.timeByteData = new Uint8Array(this.analyserNode.frequencyBinCount);
-
-    this.startPlayback();
   }
 
   startPlayback() {
-    if (this.soundInstance) return;
+    if (this.soundInstance) {
+      this.soundInstance.play({loop: -1});
+      return;
+    };
 
     this.soundInstance = createjs.Sound.play(src, {loop: -1});
     this.analyse();
+  }
+
+  stopPlayback() {
+    this.soundInstance.stop();
   }
 
   analyse() {
@@ -104,7 +108,7 @@ export default class Sound {
     for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
-            console.log(this.freqByteData[mapping[n]]);
+            // console.log(this.freqByteData[mapping[n]]);
             armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128)/255;
             if (isNaN(armPositions[armName].x)) armPositions[armName].x = baseArmPositions[armName].x;
 

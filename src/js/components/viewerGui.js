@@ -13,6 +13,8 @@ export default class ViewerGui {
     this.controls = {
       'Active Model': models[0],
       'Show Skeleton': false,
+      'Show Debug': true,
+      'Play Sound': false,
       'Skinning Type': Config.model.skinningType,
       'Kinematics Type': Config.model.kinematicsType,
     };
@@ -22,6 +24,8 @@ export default class ViewerGui {
     this.gui = new dat.GUI();
     this.gui.add(this.controls, 'Active Model', models).onChange(this.onChangeModel.bind(this));
     this.gui.add(this.controls, 'Show Skeleton').onChange(this.onToggleShowSkeleton.bind(this));
+    this.gui.add(this.controls, 'Show Debug').onChange(this.onToggleShowDebug.bind(this));
+    this.gui.add(this.controls, 'Play Sound').onChange(this.onTogglePlaySound.bind(this));
     this.gui.add(this.controls, 'Skinning Type', Config.model.skinningTypes).onChange(this.onChangeSkinningType.bind(this));
     this.gui.add(this.controls, 'Kinematics Type', Config.model.kinematicsTypes).onChange(this.onChangeKinematicsType.bind(this));
   }
@@ -145,5 +149,31 @@ export default class ViewerGui {
       },
     };
     window.dispatchEvent(new CustomEvent('on-change-kinematics-type', data));
+  }
+
+  /**
+   * callback invoked when show debug is toggled
+   * dispatches an event with the control value
+   */
+  onToggleShowDebug() {
+    let data = {
+      detail: {
+        show: this.controls['Show Debug'],
+      },
+    };
+    window.dispatchEvent(new CustomEvent('on-toggle-debug', data));
+  }
+
+  /**
+   * callback invoked when play sound is toggled
+   * dispatches an event with the control value
+   */
+  onTogglePlaySound() {
+    let data = {
+      detail: {
+        play: this.controls['Play Sound'],
+      },
+    };
+    window.dispatchEvent(new CustomEvent('on-toggle-sound', data));
   }
 }
