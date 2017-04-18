@@ -64,7 +64,7 @@ export default class Sound {
     let context = createjs.Sound.activePlugin.context;
     this.analyserNode = context.createAnalyser();
     this.analyserNode.fftSize = fftSize;
-    this.analyserNode.smoothingTimeConstant = 0.1;
+    this.analyserNode.smoothingTimeConstant = 0.9;
     this.analyserNode.connect(context.destination);
 
 
@@ -105,8 +105,19 @@ export default class Sound {
     //there are 12 IK parameters, so there should be 12 variables
 
     //let mapping = [1,2,3,4,5,6,7,8,9,10,11,12];
-    let mapping = [1,15,15,1,15,15,1,15,15,1,15,15];
-    //let mapping = [2,4,6,2,4,6,2,4,6,2,4,6];
+    //frequency to end position mapping
+    ///changes for every "genre"
+    //right hand, left hand, right leg, left leg
+    let mapping = [1,15,15,
+                    1,15,15,
+                    1,15,15,
+                    1,15,15];
+
+    ///change to suit your needs 
+    let scaling =   [1.2,  3,  1,   //right hand: x,y,z
+                    -1.2,  3,  1,    //left hand: x,y,z
+                    -1,    8,  10,    //right leg: x,y,z
+                    1,     8,  10]    //left leg: x,y,z
     let n = 0;
 
     let armPositions = this.armPositions;
@@ -116,14 +127,14 @@ export default class Sound {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
 
-            //console.log(this.freqByteData[mapping[n]]);
-            armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]-128)/100;
+            console.log(this.freqByteData[mapping[n]]);
+            armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]/255)*scaling[n];    //divide by 255 to normalize 
             if (isNaN(armPositions[armName].x)) {armPositions[armName].x = baseArmPositions[armName].x}
 
-            armPositions[armName].y = baseArmPositions[armName].y + (this.freqByteData[mapping[n+1]]-128)/100;
+            armPositions[armName].y = baseArmPositions[armName].y + (this.freqByteData[mapping[n+1]]/255)*scaling[n+1];
             if (isNaN(armPositions[armName].y)) {armPositions[armName].y = baseArmPositions[armName].y}
 
-            armPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]-128)/100;
+            armPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]/255)*scaling[n+2]; 
             if (isNaN(armPositions[armName].z)) {armPositions[armName].z = baseArmPositions[armName].z};
 
             //console.log(armPositions[armName].x);
@@ -134,7 +145,7 @@ export default class Sound {
             n = n+3;
         }
     }
-    console.log(armPositions['right hand'].x);
+    //console.log(armPositions['right hand'].x);
 
     // this.righthandX = this.timeByteData[0]
     // this.righthandY = this.timeByteData[1]
