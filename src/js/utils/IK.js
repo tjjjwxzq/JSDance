@@ -49,7 +49,7 @@ export default class IK {
         jointToGoal.sub(joint.getWorldPosition());
 
         axisGlobal.crossVectors(jointToChildJoint, jointToGoal).normalize();
-        joint.axis = joint.worldToLocal(axisGlobal);
+        joint.axis = joint.worldToLocal(axisGlobal).normalize();
       }
 
       // Get direction

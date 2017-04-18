@@ -46,7 +46,7 @@ export default class Sound {
     let context = createjs.Sound.activePlugin.context;
     this.analyserNode = context.createAnalyser();
     this.analyserNode.fftSize = fftSize;
-    this.analyserNode.smoothingTimeConstant = 0.1;
+    this.analyserNode.smoothingTimeConstant = 0.9;
     this.analyserNode.connect(context.destination);
 
 
@@ -88,8 +88,19 @@ export default class Sound {
     //there are 12 IK parameters, so there should be 12 variables
 
     //let mapping = [1,2,3,4,5,6,7,8,9,10,11,12];
-    let mapping = [1,15,15,1,15,15,1,15,15,1,15,15];
-    //let mapping = [2,4,6,2,4,6,2,4,6,2,4,6];
+    //frequency to end position mapping
+    ///changes for every "genre"
+    //right hand, left hand, right leg, left leg
+    let mapping = [1,15,15,
+                    1,15,15,
+                    1,15,15,
+                    1,15,15];
+
+    ///change to suit your needs
+    let scaling =   [1.2,  3,  1,   //right hand: x,y,z
+                    -1.2,  3,  1,    //left hand: x,y,z
+                    -1,    8,  10,    //right leg: x,y,z
+                    1,     8,  10]    //left leg: x,y,z
     let n = 0;
 
     let internalArmPositions = this.internalArmPositions;

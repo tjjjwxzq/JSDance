@@ -22,6 +22,7 @@ import humanJSON from 'human.json';
 import _simpleBeat from 'simplebeat.wav';
 import _xxangels from 'xxangels.wav';
 import _sample from 'sample.wav';
+import _sine from 'sine.wav';
 
 var TWEEN = require('tween.js');
 /**
@@ -267,6 +268,7 @@ export default class Main {
 
                 let originalEuler = joint.rotation.clone();
 
+<<<<<<< HEAD
                 if (joint.prevAngle !== undefined) {// && Math.abs(angles[i] - joint.prevAngle) < 0.004) {
                   joint.rotateOnAxis(joint.axis, angles[i]);
                   ;
@@ -303,14 +305,55 @@ export default class Main {
                   }
 
                   arm.prevError = arm.getError();
+=======
+                joint.rotateOnAxis(joint.axis, angles[i]);
+;
+                let finalRotObject = new THREE.Object3D();
+                finalRotObject.setRotationFromEuler(joint.rotation);
+
+                if (joint.rotation.x > maxX) {
+                  finalRotObject.rotation.x = maxX;
+                } else if (joint.rotation.x < minX) {
+                  finalRotObject.rotation.x = minX;
                 }
 
-                joint.prevAngle = angles[i];
+                if (joint.rotation.y > maxY) {
+                  finalRotObject.rotation.y = maxY;
+                } else if (joint.rotation.y < minY) {
+                  finalRotObject.rotation.y = minY;
+                }
+
+                if (joint.rotation.z > maxZ) {
+                  finalRotObject.rotation.z = maxZ;
+                } else if (joint.rotation.z < minZ) {
+                  finalRotObject.rotation.z = minZ;
+                }
+
+                joint.setRotationFromEuler(finalRotObject.rotation);
+
+
+                // if (arm.getError().length() > arm.prevError.length()) {
+                  // console.log("RESETTING");
+                  // joint.setRotationFromEuler(originalEuler);
+                // }
+
+                if(armName == 'right foot' && i==2) {
+                  // console.log(angles[i])
+                  // console.log(arm.joints[2].axis);
+                  // console.log(arm.joints[2].rotation);
+                  // console.log(minY);
+                  // console.log(finalRotObject.rotation);
+                  // console.log('current ' + arm.getError().length());
+                  // console.log('prev ' + arm.prevError.length());
+>>>>>>> dc32d3476e29e4ca04dc04e1156848a02b9283c6
+                }
+
               }
             }
           }
 
-          if(armName == 'right hand') {
+          if(armName == 'left hand') {
+            // console.log(arm.joints[1].rotation);
             // console.log('current update ' + IK.solve(arm)[2]);
             // console.log('prev update ' + arm.joints[2].prevAngle);
             // console.log(arm.joints[2].axis);
