@@ -1,62 +1,44 @@
 import {createjs} from 'imports-loader?this=>window!components/soundjs';
 import Config from 'config';
 
+var TWEEN = require('tween.js');
+
 let src = Config.sound.src;
 let fftSize = Config.sound.fftSize;
 let tickFreq = Config.sound.tickFreq;
-
-// let righthandX = 0
-// let righthandY = 0
-// let righthandZ = 0
-// let lefthandX = 0
-// let lefthandY = 0
-// let lefthandZ = 0
-// let rightlegX = 0
-// let rightlegY = 0
-// let rightlegZ = 0
-// let leftlegX = 0
-// let leftlegY = 0
-// let leftlegZ = 0
-
-
 
 export default class Sound {
   constructor(arms) {
     // Create object of position objects for each arm
     let armPositions = {};
     let baseArmPositions = {};
+    let internalArmPositions = {};
 
     for (let armName in arms) {
-        if (arms.hasOwnProperty(armName)) {
-            armPositions[armName] = {
-                x: arms[armName].targetPosition.x,
-                y: arms[armName].targetPosition.y,
-                z: arms[armName].targetPosition.z
-            }
-            baseArmPositions[armName] = {
-                x: arms[armName].targetPosition.x,
-                y: arms[armName].targetPosition.y,
-                z: arms[armName].targetPosition.z
-            }
+      if (arms.hasOwnProperty(armName)) {
+        armPositions[armName] = {
+          x: arms[armName].targetPosition.x,
+          y: arms[armName].targetPosition.y,
+          z: arms[armName].targetPosition.z
         }
+        baseArmPositions[armName] = {
+          x: arms[armName].targetPosition.x,
+          y: arms[armName].targetPosition.y,
+          z: arms[armName].targetPosition.z
+        }
+        internalArmPositions[armName] = {
+          x: arms[armName].targetPosition.x,
+          y: arms[armName].targetPosition.y,
+          z: arms[armName].targetPosition.z
+        }
+      }
     }
     this.baseArmPositions = baseArmPositions;
+    this.internalArmPositions = internalArmPositions;
     this.armPositions = armPositions;
     createjs.Sound.registerPlugins([createjs.WebAudioPlugin]);
     createjs.Sound.registerSound(src, 'sound');
     createjs.Sound.on('fileload', this.handleLoad.bind(this));
-    // this.righthandX = 0;
-    // this.righthandY = 0;
-    // this.righthandZ = 0;
-    // this.lefthandX = 0;
-    // this.lefthandY = 0;
-    // this.lefthandZ = 0;
-    // this.rightlegX = 0;
-    // this.rightlegY = 0;
-    // this.rightlegZ = 0;
-    // this.leftlegX = 0;
-    // this.leftlegY = 0;
-    // this.leftlegZ = 0;
   }
 
   handleLoad() {
@@ -68,7 +50,7 @@ export default class Sound {
     this.analyserNode.connect(context.destination);
 
 
-  // attach visualizer node to our existing dynamicsCompressorNode, which was connected to context.destination
+    // attach visualizer node to our existing dynamicsCompressorNode, which was connected to context.destination
     let dynamicsNode = createjs.Sound.activePlugin.dynamicsCompressorNode;
     dynamicsNode.disconnect();  // disconnect from destination
     dynamicsNode.connect(this.analyserNode);
@@ -86,14 +68,15 @@ export default class Sound {
     };
 
     this.soundInstance = createjs.Sound.play(src, {loop: -1});
-    this.analyse();
+    console.log("tweening");
+    setInterval(this.analyse.bind(this), 500);
   }
 
   stopPlayback() {
     this.soundInstance.stop();
   }
 
-  analyse(evt) {
+  analyse() {
     requestAnimationFrame(this.analyse.bind(this));
     this.analyserNode.getByteFrequencyData(this.freqByteData); //frequency
     this.analyserNode.getByteTimeDomainData(this.timeByteData); //waveform
@@ -101,26 +84,38 @@ export default class Sound {
     //frequency to end position mapping
     ///changes for every "genre"
     //right hand, left hand, right leg, left leg
-    let mapping = [1,15,15,
-                    1,15,15,
-                    1,15,15,
-                    1,15,15];
+    // let mapping = [1,15,15,
+    //                 1,15,15,
+    //                 1,15,15,
+    //                 1,15,15];
+    let mapping = [1,15,1,
+                    1,15,1,
+                    5,15,15,
+                    5,15,15];
 
-    ///change to suit your needs 
-    let scaling =   [1.2,  3,  1,   //right hand: x,y,z
-                    -1.2,  3,  1,    //left hand: x,y,z
-                    -1,    8,  10,    //right leg: x,y,z
-                    1,     8,  10]    //left leg: x,y,z
+    ///change to suit your needs
+    let scaling =   [1.7,  3,  2.5,   //right hand: x,y,z
+                    -1.7,  3,  2.5,    //left hand: x,y,z
+                    -1,    8,  2,    //right leg: x,y,z
+                    1,     8,  2]    //left leg: x,y,z
     let n = 0;
 
-    let armPositions = this.armPositions;
+    let internalArmPositions = this.internalArmPositions;
     let baseArmPositions = this.baseArmPositions;
-
+    let armPositions = this.armPositions;
+    console.log("analyse");
     for (let armName in Config.arms) {
         if (Config.arms.hasOwnProperty(armName)) {
             //console.log(baseArmPositions[armName].x, baseArmPositions[armName].y, baseArmPositions[armName].z);
 
+            /********** Using random number **********/
+            // internalArmPositions[armName].x = baseArmPositions[armName].x + (Math.random() * 2 - 1.0) * 2;
+            // internalArmPositions[armName].y = baseArmPositions[armName].y + (Math.random() * 2 - 1.0) * 2;
+            // internalArmPositions[armName].z = baseArmPositions[armName].z + (Math.random() * 2 - 1.0) * 2;
+            /******************************/
+
             //console.log(this.freqByteData[mapping[n]]);
+            
             armPositions[armName].x = baseArmPositions[armName].x + (this.freqByteData[mapping[n]]/255)*scaling[n];    //divide by 255 to normalize 
             if (isNaN(armPositions[armName].x)) {armPositions[armName].x = baseArmPositions[armName].x}
 
@@ -129,29 +124,18 @@ export default class Sound {
 
             armPositions[armName].z = baseArmPositions[armName].z + (this.freqByteData[mapping[n+2]]/255)*scaling[n+2]; 
             if (isNaN(armPositions[armName].z)) {armPositions[armName].z = baseArmPositions[armName].z};
+            
 
             //console.log(armPositions[armName].x);
             //console.log(armPositions[armName].x,armPositions[armName].y,armPositions[armName].z)
 
+            new TWEEN.Tween(this.armPositions[armName])
+            // .to({ internalArmPositions }, 3000)
+              .to({ x: internalArmPositions[armName].x, y: internalArmPositions[armName].y, z: internalArmPositions[armName].z }, 500)
+              .start();
+
             n = n+3;
         }
     }
-    //console.log(armPositions['right hand'].x);
-
-    // this.righthandX = this.timeByteData[0]
-    // this.righthandY = this.timeByteData[1]
-    // this.righthandZ = this.timeByteData[2]
-    // this.lefthandX = this.timeByteData[3]
-    // this.lefthandY = this.timeByteData[4]
-    // this.lefthandZ = this.timeByteData[5]
-    // this.rightlegX = this.timeByteData[6]
-    // this.rightlegY = this.timeByteData[7]
-    // this.rightlegZ = this.timeByteData[8]
-    // this.leftlegX = this.timeByteData[9]
-    // this.leftlegY = this.timeByteData[10]
-    // this.leftlegZ = this.timeByteData[11]
-
-    //console.log(righthandX, righthandY, righthandZ, lefthandX, lefthandY,lefthandZ,
-    //rightlegX, rightlegY, rightlegZ, leftlegX, leftlegY, leftlegZ)
   }
 }
