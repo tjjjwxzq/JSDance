@@ -286,4 +286,6 @@ export default {
     fftSize: 32,
     //sampleRate: 500,
   },
+  ikMethods: ['transpose',
+              'damped']
 };
