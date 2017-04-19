@@ -24,6 +24,8 @@ import _xxangels from 'xxangels.wav';
 import _sample from 'sample.wav';
 import _sine from 'sine.wav';
 import _goof from 'Goof.mp3';
+import _ss from 'ss.wav';
+import _simon from 'simon.mp3';
 
 var TWEEN = require('tween.js');
 /**
@@ -68,7 +70,7 @@ export default class Main {
 
     // IK Method
     this.ikMethod = Config.ikMethods[0];
-    
+
     // Load models
     this.models = {};
     this.models[this.modelName] = null;
