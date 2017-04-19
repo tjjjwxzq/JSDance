@@ -126,7 +126,7 @@ export default {
       521,  //goof
       500,  //xxangels
       1000, //sample
-      448,  //simon
+      896,  //simon
       120,  //ss.wav
       1000, //simplebeat.wav
       500,  //sine.wav
@@ -189,8 +189,8 @@ export default {
       0,    5,  -2,    //right leg: x,y,z
       0,     5,  -2],    //left leg: x,y,z
 
-      [1,  10,  10,   //right hand: x,y,z SS
-      1,  10,  10,    //left hand: x,y,z
+      [-2,  1,  10,   //right hand: x,y,z SS
+      2,  1,  10,    //left hand: x,y,z
       -0.5,    5,  -12,    //right leg: x,y,z
       0.5,     5,  -12],    //left leg: x,y,z
 
@@ -227,8 +227,8 @@ export default {
       0,0,0,
       0,0,0],
 
-      [1,-6,-5,        //SS
-      -1,-6,-5,
+      [2,-1,-5,        //SS
+      -2,-1,-5,
       0,-3,5,
       0,-3,5],
 
