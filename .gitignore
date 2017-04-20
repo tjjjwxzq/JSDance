@@ -1,3 +1,4 @@
 node_modules/
-build/
+# build/
+# checking in to add this to gh-pages
 *.log
